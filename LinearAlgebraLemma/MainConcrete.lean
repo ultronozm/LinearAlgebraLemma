@@ -354,9 +354,9 @@ theorem conj_cancel' {R : Type} [CommRing R]
 
 open LinearEquiv Matrix in
 example {R : Type} [CommRing R] {n : ℕ}
-  (x : Mat R (n+1))
-  : conj decomp.symm (conj decomp $ toLin' x) = toLin' x
-  := 
+    (x : Mat R (n+1))
+    : conj decomp.symm (conj decomp $ toLin' x) = toLin' x
+    := 
   by simp only [conj_cancel]
 
 open LinearEquiv LinearMap Matrix in
@@ -670,10 +670,9 @@ theorem ι_apply  {R : Type} [CommRing R] {n : ℕ}
     : ι x = conj decomp (toLin' x) := rfl
 
 example
-  {R : Type} [CommRing R] {n : ℕ}
-  (x y : Mat R (n+1)) 
-  : ⁅ι x, ι y⁆ = ι ⁅x, y⁆
-  := by
+    {R : Type} [CommRing R] {n : ℕ}
+    (x y : Mat R (n+1)) 
+    : ⁅ι x, ι y⁆ = ι ⁅x, y⁆ := by
   apply lie_map_of_ring_hom' (B := Module.End R ((Fin n → R) × R)) R (ι_AlgEquiv R n) x y
 
 /-
@@ -732,15 +731,15 @@ where 2 is a unit.
 -/
 open LinearEquiv LinearMap Matrix in
 theorem MainConcrete
-  (n : ℕ)
-  (R : Type) [Field R] [IsAlgClosed R] [DecidableEq R]
-  (hR : IsUnit (2:R))
-  (τ : Mat R (n+1)) (hτ : τ.charpoly.roots ⊓ (Matrix.subUpLeft τ).charpoly.roots = ⊥)
-  (x : Mat R (n+1)) (hx : ⁅x, τ⁆ = 0)
-  (y : Mat R n)
-  (heq : ⁅x, ⁅matrixIncl (1 : Mat R n), τ⁆⁆ = ⁅matrixIncl y, τ⁆)
-  : ∃ (r : R), x = r • (1 : Mat R (n+1))
-  := by
+    (n : ℕ)
+    (R : Type) [Field R] [IsAlgClosed R] [DecidableEq R]
+    (hR : IsUnit (2:R))
+    (τ : Mat R (n+1)) (hτ : τ.charpoly.roots ⊓ (Matrix.subUpLeft τ).charpoly.roots = ⊥)
+    (x : Mat R (n+1)) (hx : ⁅x, τ⁆ = 0)
+    (y : Mat R n)
+    (heq : ⁅x, ⁅matrixIncl (1 : Mat R n), τ⁆⁆ = ⁅matrixIncl y, τ⁆)
+    : ∃ (r : R), x = r • (1 : Mat R (n+1))
+    := by
   set V := (Fin n) → R
   let τ' : Module.End R (V × R) := ι τ
   set τ'H := (upperLeftProj R V R τ')
