@@ -11,7 +11,7 @@ We formalize in Lean 4 a proof of [@2020arXiv201202187N Theorem 1.8]:
 ::: {#theorem:cnee1j2i90 .theorem}
 **Theorem 1**. *(`MainConcrete'` in [MainConcrete](MainConcrete.lean))*
 
-*Let $M_{n}$ denote the space of complex $n \times n$ matrices, included
+Let $M_{n}$ denote the space of complex $n \times n$ matrices, included
 in the space $M_{n+1}$ of $(n+1) \times (n+1)$ matrices as the
 upper-left block, e.g., for $n = 2$, as $$\begin{pmatrix}
       \ast & \ast & 0 \\
@@ -24,7 +24,7 @@ $x \in M_{n+1}$ with $[x,\tau] = 0$, where $[a,b] := a b -b a$. Let $z$
 denote the image in $M_{n+1}$ of the identity element of $M_n$, thus
 $z = \mathop{\mathrm{diag}}(1,\dotsc,1,0)$ with $n$ ones. Suppose that
 $$[x,[z,\tau]] = [y, \tau]$$ for some $y \in M_n$. Then $x$ is a scalar
-matrix.*
+matrix.
 :::
 
 Here is the corresponding statement in Lean:
