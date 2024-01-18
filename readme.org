@@ -1,0 +1,30 @@
+#+title: Formalizing a linear algebra lemma in Lean 4
+#+author: Paul Nelson
+
+This repository contains a formalization of Theorem 1.8 of my paper /Spectral aspect subconvex bounds for/ $U_{n+1} \times U_n$ ([[https://arxiv.org/abs/2012.02187][arXiv]], [[https://doi.org/10.1007/s00222-023-01180-x][doi]]), whose statement is as follows:
+
+Let $M_{n}$ denote the space of complex $n \times n$ matrices, included in the space $M_{n+1}$ of $(n+1) \times (n+1)$ matrices as the upper-left block, e.g., for $n = 2$, as $$ \begin{pmatrix} \ast & \ast & 0 \\ \ast & \ast & 0 \\ 0 & 0 & 0 \end{pmatrix}.$$ Let $\tau$ be an element of $M_{n+1}$ with the property that no eigenvalue of $\tau$ is also an eigenvalue of the upper-left $n \times n$ submatrix $\tau_0$ of $\tau$.  Let $x \in M_{n+1}$ with $[x,\tau] = 0$, where $[a,b] := a b -b a$.  Let $z$ denote the image in $M_{n+1}$ of the identity element of $M_n$, thus $z = \mathrm{diag}(1,\dotsc,1,0)$ with $n$ ones.  Suppose that \[ [x,[z,\tau]] = [y, \tau] \] for some $y \in M_n$.  Then $x$ is a scalar matrix.
+
+Here is the corresponding statement in Lean:
+#+begin_src lean4
+import Mathlib
+
+abbrev Mat (R : Type) [Ring R] (n : ℕ) := Matrix (Fin n) (Fin n) R
+
+def matrixIncl {R : Type} [Ring R] {n : ℕ}
+  (x : Mat R n) : Mat R (n+1) := 
+  fun i j ↦ if h : i  ≠ Fin.last n ∧ j ≠ Fin.last n
+    then x ⟨i, Fin.val_lt_last h.1⟩ ⟨j, Fin.val_lt_last h.2⟩
+    else 0
+
+example (n : ℕ)
+  (τ : Mat ℂ (n+1)) (hτ : τ.charpoly.roots ⊓ (Matrix.subUpLeft τ).charpoly.roots = ⊥)
+  (x : Mat ℂ (n+1)) (hx : ⁅x, τ⁆ = 0) (y : Mat ℂ n)
+  (h : ⁅x, ⁅matrixIncl (1 : Mat ℂ n), τ⁆⁆ = ⁅matrixIncl y, τ⁆)
+  : ∃ (r : ℂ), x = r • (1 : Mat ℂ (n+1)) := by sorry
+\end{verbatim}
+#+end_src
+
+This result is perhaps of little intrinsic interest -- it is the "linear algebra lemma" required at the end of a longer analytic argument -- but I was nevertheless motivated to formalize it as an educational project.
+
+I wrote a [[./LinearAlgebraLemma/guide.pdf][guide]] giving an overview of the proof and indicating which parts correspond to which Lean files and theorems (it would presumably be better to use [[https://github.com/PatrickMassot/leanblueprint][blueprint]] for this).
