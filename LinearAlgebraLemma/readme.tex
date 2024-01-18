@@ -29,6 +29,24 @@ We formalize in Lean 4 a proof of \cite[Theorem 1.8]{2020arXiv201202187N}:
   \]
   for some $y \in M_n$.  Then $x$ is a scalar matrix.
 \end{theorem}
+Here is the corresponding statement in Lean:
+\begin{verbatim}
+import Mathlib
+
+abbrev Mat (R : Type) [Ring R] (n : ℕ) := Matrix (Fin n) (Fin n) R
+
+def matrixIncl {R : Type} [Ring R] {n : ℕ}
+  (x : Mat R n) : Mat R (n+1) := 
+  fun i j ↦ if h : i  ≠ Fin.last n ∧ j ≠ Fin.last n
+    then x ⟨i, Fin.val_lt_last h.1⟩ ⟨j, Fin.val_lt_last h.2⟩
+    else 0
+
+example (n : ℕ)
+  (τ : Mat ℂ (n+1)) (hτ : τ.charpoly.roots ⊓ (Matrix.subUpLeft τ).charpoly.roots = ⊥)
+  (x : Mat ℂ (n+1)) (hx : ⁅x, τ⁆ = 0) (y : Mat ℂ n)
+  (h : ⁅x, ⁅matrixIncl (1 : Mat ℂ n), τ⁆⁆ = ⁅matrixIncl y, τ⁆)
+  : ∃ (r : ℂ), x = r • (1 : Mat ℂ (n+1)) := by sorry
+\end{verbatim}
 
 This result is perhaps of little intrinsic interest -- it is the ``linear algebra lemma'' required at the end of a longer analytic argument -- but I was nevertheless motivated to formalize it as an educational project.  In this note, we record a proof and indicate which parts correspond to which Lean files and theorems (it would presumably be better to use \href{https://github.com/PatrickMassot/leanblueprint}{blueprint} for this).
 
