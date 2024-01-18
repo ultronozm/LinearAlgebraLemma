@@ -309,7 +309,6 @@ In retrospect, it might have been simpler to express everything in
 terms of matrices all along, so that the "transpose" operation behaves
 much more simply.  Alas.
 
-
 ********************************************************************************
 
 -/
@@ -363,7 +362,9 @@ open Module LinearMap LinearEquiv in
 theorem fst_κ'
     {R : Type} [Field R]
     {V : Type} [AddCommGroup V] [Module R V] [Finite R V]
-    : (fst R (Dual R V) R) ∘ₗ (κ' R V).toLinearMap = (fst R (Dual R V) (Dual R R)) ∘ₗ ((coprodEquiv R).symm : Dual R (V × R) ≃ₗ[R] (Dual R V) × (Dual R R))
+    : (fst R (Dual R V) R) ∘ₗ (κ' R V).toLinearMap
+      = (fst R (Dual R V) (Dual R R))
+        ∘ₗ ((coprodEquiv R).symm : Dual R (V × R) ≃ₗ[R] (Dual R V) × (Dual R R))
     := by
   unfold κ'
   rfl
@@ -390,7 +391,8 @@ theorem κ'_symm_apply
     (R : Type) [Field R]
     (V : Type) [AddCommGroup V] [Module R V] [Finite R V]
     (v : (Dual R V) × R)
-    : (κ' R V).symm v = (coprodEquiv R) (((refl R $ Dual R V).prod (ringLmapEquivSelf R R R)).symm v)
+    : (κ' R V).symm v
+      = (coprodEquiv R) (((refl R $ Dual R V).prod (ringLmapEquivSelf R R R)).symm v)
     := by rfl
 
 open Module LinearMap LinearEquiv in
@@ -446,7 +448,8 @@ theorem dual_dual
   calc
   _ = x.dualMap.dualMap ∘ₗ (refl R (Dual R (Dual R V))) := rfl
   _ = x.dualMap.dualMap ∘ₗ ((evalEquiv R V).symm ≪≫ₗ (evalEquiv R V)) := by rw [(symm_trans_self _)]
-  _ = (x.dualMap.dualMap ∘ₗ (evalEquiv R V) : V →ₗ[R] Dual R (Dual R V)) ∘ₗ ((evalEquiv R V).symm : Dual R (Dual R V) ≃ₗ[R] V) := by rfl
+  _ = (x.dualMap.dualMap ∘ₗ (evalEquiv R V)
+      : V →ₗ[R] Dual R (Dual R V)) ∘ₗ ((evalEquiv R V).symm : Dual R (Dual R V) ≃ₗ[R] V) := by rfl
   _ = ((evalEquiv R V) ∘ₗ x) ∘ₗ ((evalEquiv R V).symm : Dual R (Dual R V) ≃ₗ[R] V) := by rfl
   _ = (conj (evalEquiv R V)) x := by rfl
 
@@ -465,7 +468,8 @@ theorem relate_κ_κ'
     ∘ₗ ((evalEquiv R (V × R)).toLinearMap ∘ₗ τ ∘ₗ (evalEquiv R (V × R)).symm.toLinearMap)
     ∘ₗ (κ' R V).dualMap := by 
     rw [dual_dual R (V × R) τ]
-  _ = ((evalEquiv R (V × R)) ≪≫ₗ (κ' R V).symm.dualMap) ∘ₗ τ ∘ₗ ((κ' R V).dualMap ≪≫ₗ (evalEquiv R (V × R)).symm) := by rfl
+  _ = ((evalEquiv R (V × R)) ≪≫ₗ (κ' R V).symm.dualMap) ∘ₗ τ
+      ∘ₗ ((κ' R V).dualMap ≪≫ₗ (evalEquiv R (V × R)).symm) := by rfl
   _ = (κ R V).toLinearMap ∘ₗ τ ∘ₗ (κ R V).symm.toLinearMap := by rfl
 
 open Matrix in
@@ -511,7 +515,7 @@ theorem charpoly_dualmap_eq_charpoly
 
 /-
 
-The condiiton that a matrix and its upper-left block have coprime
+The condition that a matrix and its upper-left block have coprime
 characteristic polynomials is invariant under conjugation by κ.
 
 -/
@@ -542,10 +546,12 @@ theorem madness1
     (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
     (τ : End R (V × R)) 
     :
-    (κ R V).toLinearMap ∘ₗ τ = ((κ R V).toLinearMap ∘ₗ τ ∘ₗ (κ R V).symm.toLinearMap) ∘ₗ (κ R V) := by
+    (κ R V).toLinearMap ∘ₗ τ = ((κ R V).toLinearMap ∘ₗ τ ∘ₗ (κ R V).symm.toLinearMap) ∘ₗ (κ R V)
+    := by
   calc
   (κ R V).toLinearMap ∘ₗ τ = (κ R V).toLinearMap ∘ₗ τ ∘ₗ (refl R (V × R)) := rfl
-  _ = (κ R V).toLinearMap ∘ₗ τ ∘ₗ ((κ R V) ≪≫ₗ (κ R V).symm).toLinearMap := by rw [(self_trans_symm _)]
+  _ = (κ R V).toLinearMap ∘ₗ τ ∘ₗ ((κ R V) ≪≫ₗ (κ R V).symm).toLinearMap := by
+    rw [(self_trans_symm _)]
   _ = (κ R V).toLinearMap ∘ₗ τ ∘ₗ (κ R V).symm.toLinearMap ∘ₗ (κ R V) := by rfl
   _ = ((κ R V).toLinearMap ∘ₗ τ ∘ₗ (κ R V).symm.toLinearMap) ∘ₗ (κ R V) := by rfl
 
@@ -568,7 +574,8 @@ theorem necessary_equivariance
     (τ : End R (V × R)) 
     :
     let τ' := ((κ' R V).toLinearMap ∘ₗ τ.dualMap ∘ₗ (κ' R V).symm.toLinearMap)
-    ∀ p : R[X], (κ R V) ∘ₗ (aeval (R := R) τ p) = (aeval (R := R) τ'.dualMap p) ∘ₗ (κ R V).toLinearMap
+    ∀ p : R[X], (κ R V) ∘ₗ (aeval (R := R) τ p)
+      = (aeval (R := R) τ'.dualMap p) ∘ₗ (κ R V).toLinearMap
     := by
   intro τ' p
   induction' p using Polynomial.induction_on' with p q hp hq n c

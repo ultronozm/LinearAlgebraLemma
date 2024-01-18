@@ -217,8 +217,10 @@ theorem transpose_injective
   haveI : DecidableEq ι := inferInstance
   let B : Basis ι R V := Module.Free.chooseBasis R V
   let B' : Basis ι R (Dual R V) := Basis.dualBasis B
-  have ha : (toMatrix B' B' (Dual.transpose a)) = (toMatrix B B a).transpose := toMatrix_transpose' (K := R) (B₁ := B) (B₂ := B) a
-  have hb : (toMatrix B' B' (Dual.transpose b)) = (toMatrix B B b).transpose := toMatrix_transpose' (K := R) (B₁ := B) (B₂ := B) b
+  have ha : (toMatrix B' B' (Dual.transpose a)) = (toMatrix B B a).transpose :=
+    toMatrix_transpose' (K := R) (B₁ := B) (B₂ := B) a
+  have hb : (toMatrix B' B' (Dual.transpose b)) = (toMatrix B B b).transpose :=
+    toMatrix_transpose' (K := R) (B₁ := B) (B₂ := B) b
   unfold dualMap at h
   rw [h] at ha
   rw [ha] at hb

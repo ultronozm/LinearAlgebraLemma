@@ -659,9 +659,8 @@ def ι_AlgEquiv (R : Type) [CommRing R] (n : ℕ)
     := toLinAlgEquiv'.trans (algConj decomp)
 
 def ι {R : Type} [CommRing R] {n : ℕ}
-  (x : Mat R (n+1))
---  : Module.End R ((Fin n → R) × R) := conj decomp $ toLin' x
-  : Module.End R ((Fin n → R) × R) := ι_AlgEquiv R n x
+    (x : Mat R (n+1))
+    : Module.End R ((Fin n → R) × R) := ι_AlgEquiv R n x
 
 open LinearEquiv Matrix in
 @[simp]
@@ -694,29 +693,29 @@ theorem aux_commutator_equivariance {R : Type} [CommRing R] {n : ℕ}
     let y' : Module.End R V := toLin' y
     ⁅x', ⁅upperLeftIncl R V R 1, τ'⁆⁆ = ⁅upperLeftIncl R V R y', τ'⁆
     := by
-    intro V τ' x' y'
-    set V := (Fin n) → R
-    have hy' : upperLeftIncl R V R y' = conj decomp (toLin' (matrixIncl y)) :=
-      aux_upper_left_incl_equivariance y
-    have h1H : upperLeftIncl R V R 1 = conj decomp (toLin' (matrixIncl (1 : Mat R n))) := by
-      rw [← aux_upper_left_incl_equivariance 1]
-      congr
-      simp
-      rfl
-    rw [hy', h1H]
-    calc
-    _ = ⁅x', ⁅ι (matrixIncl (1 : Mat R n)), ι τ⁆⁆ := rfl
-    _ = ⁅x', ι ⁅(matrixIncl (1 : Mat R n)), τ⁆⁆ := by
-      have : ⁅ι (matrixIncl (1 : Mat R n)), ι τ⁆ = (ι ⁅(matrixIncl (1 : Mat R n)), τ⁆)
-        := by apply lie_map_of_ring_hom' (B := Module.End R (V × R)) R (ι_AlgEquiv R n) _ τ
-      rw [this]
-    _ = ⁅ι x, ι ⁅(matrixIncl (1 : Mat R n)), τ⁆⁆ := rfl
-    _ = ι ⁅x, ⁅(matrixIncl (1 : Mat R n)), τ⁆⁆
-      := by apply lie_map_of_ring_hom' (B := Module.End R (V × R)) R (ι_AlgEquiv R n) x _
-    _ = ι ⁅matrixIncl y, τ⁆ := by rw [heq]
-    _ = ⁅ι (matrixIncl y), ι τ⁆
-      := by apply (lie_map_of_ring_hom' (B := Module.End R (V × R)) R (ι_AlgEquiv R n) _ τ).symm
-    _ = ⁅ι (matrixIncl y), τ'⁆ := rfl
+  intro V τ' x' y'
+  set V := (Fin n) → R
+  have hy' : upperLeftIncl R V R y' = conj decomp (toLin' (matrixIncl y)) :=
+    aux_upper_left_incl_equivariance y
+  have h1H : upperLeftIncl R V R 1 = conj decomp (toLin' (matrixIncl (1 : Mat R n))) := by
+    rw [← aux_upper_left_incl_equivariance 1]
+    congr
+    simp
+    rfl
+  rw [hy', h1H]
+  calc
+  _ = ⁅x', ⁅ι (matrixIncl (1 : Mat R n)), ι τ⁆⁆ := rfl
+  _ = ⁅x', ι ⁅(matrixIncl (1 : Mat R n)), τ⁆⁆ := by
+    have : ⁅ι (matrixIncl (1 : Mat R n)), ι τ⁆ = (ι ⁅(matrixIncl (1 : Mat R n)), τ⁆)
+      := by apply lie_map_of_ring_hom' (B := Module.End R (V × R)) R (ι_AlgEquiv R n) _ τ
+    rw [this]
+  _ = ⁅ι x, ι ⁅(matrixIncl (1 : Mat R n)), τ⁆⁆ := rfl
+  _ = ι ⁅x, ⁅(matrixIncl (1 : Mat R n)), τ⁆⁆
+    := by apply lie_map_of_ring_hom' (B := Module.End R (V × R)) R (ι_AlgEquiv R n) x _
+  _ = ι ⁅matrixIncl y, τ⁆ := by rw [heq]
+  _ = ⁅ι (matrixIncl y), ι τ⁆
+    := by apply (lie_map_of_ring_hom' (B := Module.End R (V × R)) R (ι_AlgEquiv R n) _ τ).symm
+  _ = ⁅ι (matrixIncl y), τ'⁆ := rfl
 
 /-
 
