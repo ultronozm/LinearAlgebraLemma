@@ -22,7 +22,6 @@ example (n : ℕ)
   (x : Mat ℂ (n+1)) (hx : ⁅x, τ⁆ = 0) (y : Mat ℂ n)
   (h : ⁅x, ⁅matrixIncl (1 : Mat ℂ n), τ⁆⁆ = ⁅matrixIncl y, τ⁆)
   : ∃ (r : ℂ), x = r • (1 : Mat ℂ (n+1)) := by sorry
-\end{verbatim}
 #+end_src
 
 This result is perhaps of little intrinsic interest -- it is the "linear algebra lemma" required at the end of a longer analytic argument -- but I was nevertheless motivated to formalize it as an educational project.
