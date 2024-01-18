@@ -511,7 +511,7 @@ theorem charpoly_dualmap_eq_charpoly
 
 /-
 
-The coniditon that a matrix and its upper-left block have coprime
+The condiiton that a matrix and its upper-left block have coprime
 characteristic polynomials is invariant under conjugation by κ.
 
 -/
