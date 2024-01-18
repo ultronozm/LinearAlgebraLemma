@@ -29,26 +29,8 @@ We formalize in Lean 4 a proof of \cite[Theorem 1.8]{2020arXiv201202187N}:
   \]
   for some $y \in M_n$.  Then $x$ is a scalar matrix.
 \end{theorem}
-Here is the corresponding statement in Lean:
-\begin{verbatim}
-import Mathlib
 
-abbrev Mat (R : Type) [Ring R] (n : ℕ) := Matrix (Fin n) (Fin n) R
-
-def matrixIncl {R : Type} [Ring R] {n : ℕ}
-  (x : Mat R n) : Mat R (n+1) := 
-  fun i j ↦ if h : i  ≠ Fin.last n ∧ j ≠ Fin.last n
-    then x ⟨i, Fin.val_lt_last h.1⟩ ⟨j, Fin.val_lt_last h.2⟩
-    else 0
-
-example (n : ℕ)
-  (τ : Mat ℂ (n+1)) (hτ : τ.charpoly.roots ⊓ (Matrix.subUpLeft τ).charpoly.roots = ⊥)
-  (x : Mat ℂ (n+1)) (hx : ⁅x, τ⁆ = 0) (y : Mat ℂ n)
-  (h : ⁅x, ⁅matrixIncl (1 : Mat ℂ n), τ⁆⁆ = ⁅matrixIncl y, τ⁆)
-  : ∃ (r : ℂ), x = r • (1 : Mat ℂ (n+1)) := by sorry
-\end{verbatim}
-
-This result is perhaps of little intrinsic interest -- it is the ``linear algebra lemma'' required at the end of a longer analytic argument -- but I was nevertheless motivated to formalize it as an educational project.  In this note, we record a proof and indicate which parts correspond to which Lean files and theorems (it would presumably be better to use \href{https://github.com/PatrickMassot/leanblueprint}{blueprint} for this).
+In this note, we record a proof and indicate which parts correspond to which Lean files and theorems.
 
 \begin{remark}
   The original proof reduced to a determinental identity \cite[Theorem 17.2]{2020arXiv201202187N} that was verified using some geometric invariant theory.  We decided to formalize a related but more elementary argument noted in \cite[Remark 5.15]{2023arXiv2309.06314}.
@@ -173,27 +155,6 @@ Let $R$ be a commutative ring.  Let $M$ be a finitely-generated $R$-module, and 
   Mathlib contains suitable formulations of Nakayama's lemma.  The main outstanding ingredient needed to formalize Lemma \ref{lemma:cnee1m7ggm} is the generalization of \verb|ideal_eq_bot_of_localization| from ideals to modules.
 \end{remark}
 
-\def\cprime{$'$} \def\cprime{$'$} \def\cprime{$'$} \def\cprime{$'$}
-\begin{thebibliography}{1}
 
-\bibitem{MR3525784}
-M.~F. Atiyah and I.~G. Macdonald.
-\newblock {\em Introduction to commutative algebra}.
-\newblock Addison-Wesley Series in Mathematics. Westview Press, Boulder, CO,
-  economy edition, 2016.
-\newblock For the 1969 original see [MR0242802].
-
-\bibitem{2023arXiv2309.06314}
-Yueke Hu and Paul~D Nelson.
-\newblock Subconvex bounds for $u_{n+1}\times u_n$ in horizontal aspects.
-\newblock 09 2023.
-\newblock arXiv:2309.06314.
-
-\bibitem{2020arXiv201202187N}
-Paul~D. Nelson.
-\newblock Spectral aspect subconvex bounds for {$U_{n+1} \times U_n$}.
-\newblock {\em Invent. Math.}, 232(3):1273--1438, 2023.
-
-\end{thebibliography}
-
+\bibliography{refs}{} \bibliographystyle{plain}
 \end{document}
