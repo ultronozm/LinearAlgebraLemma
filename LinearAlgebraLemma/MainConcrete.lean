@@ -720,7 +720,8 @@ theorem aux_commutator_equivariance {R : Type} [CommRing R] {n : ℕ}
 /-
 
 Let x, τ be (n+1)×(n+1).  Let y be n×n, extended by zero to
-(n+1)×(n+1).  Let z = diag(1,...,1,0).  If
+(n+1)×(n+1).  Let z = diag(1,...,1,0).  If τ and its upper left block
+have coprime characteristic polynomials, and
 
   [x, τ] = 0 and [x, [z, τ]] = [y, τ],
 
@@ -773,7 +774,8 @@ theorem MainConcrete
 /-
 
 Let x, τ be (n+1)×(n+1).  Let y be n×n, extended by zero to
-(n+1)×(n+1).  Let z = diag(1,...,1,0).  If
+(n+1)×(n+1).  Let z = diag(1,...,1,0).  If τ and its upper left block
+have coprime characteristic polynomials, and
 
   [x, τ] = 0 and [x, [z, τ]] = [y, τ],
 
