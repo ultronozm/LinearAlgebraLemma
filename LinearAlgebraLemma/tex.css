@@ -1,0 +1,77 @@
+div.theorem,
+div.lemma,
+div.proposition,
+div.definition,
+div.exercise,
+div.example,
+div.hypothesis,
+div.corollary,
+div.remark,
+div.notation,
+div.note,
+div.problem,
+div.question,
+div.answer,
+div.criterion,
+div.summary
+{
+    margin: 1em 1em 1em 1em;
+    padding: 10px;
+    text-align: left;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #ccc;      
+}
+
+@media (max-width: 600px) {
+  div.theorem,
+  div.lemma,
+  div.proposition,
+  div.definition,
+  div.exercise,
+  div.example,
+  div.hypothesis,
+  div.corollary,
+  div.remark,
+  div.notation,
+  div.note,
+  div.problem,
+  div.question,
+  div.answer,
+  div.criterion,
+  div.summary,
+  div.answer,
+  div.criterion,
+  div.summary {
+    margin: 0em 0em 0em 0em;
+    padding: 0;
+    border: none;
+  }
+}
+
+.my-links-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding-right: 20px;
+    padding-top: 10px;
+}
+.my-link {
+    margin-left: 10px;
+}
+
+.theorem-header {
+    font-size: 1.0em;
+    line-height: 1.5;
+}
+
+html {
+    line-height: 1.5;
+    font-family: Georgia, serif;
+    font-size: 20px;
+    color: #1a1a1a;
+    background-color: #fdfdfd;
+}
+
+
+    /* margin: 5px 5px 5px 5px; */

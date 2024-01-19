@@ -26,4 +26,4 @@ example (n : ℕ)
 
 This result is perhaps of little intrinsic interest -- it is the "linear algebra lemma" required at the end of a longer analytic argument -- but I was nevertheless motivated to formalize it as an educational project.
 
-I wrote a [[./LinearAlgebraLemma/guide.pdf][guide]] giving an overview of the proof and indicating which parts correspond to which Lean files and theorems (it would presumably be better to use [[https://github.com/PatrickMassot/leanblueprint][blueprint]] for this).  If you download the repository, then the PDF should contain links to the corresponding Lean files.
+I wrote a [[./LinearAlgebraLemma/guide.pdf][guide]] giving an overview of the proof and indicating which parts correspond to which Lean files and theorems (it would presumably be better to use [[https://github.com/PatrickMassot/leanblueprint][blueprint]] for this).  If you download the repository, then the PDF should contain links to the corresponding Lean files.  There's also an equivalent [[./LinearAlgebraLemma/guide.html][html version]] of the guide that you can view locally after downloading the repo.
