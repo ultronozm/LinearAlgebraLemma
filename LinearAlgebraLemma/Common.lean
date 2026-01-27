@@ -15,13 +15,13 @@ theorem toMatrix_conj
     (τ : Module.End R V)
     (f : V ≃ₗ[R] W)
     {I : Type} [Fintype I] [DecidableEq I]
-    (b : Basis I R V)
+    (b : Module.Basis I R V)
     : (toMatrix b b) τ = (toMatrix (b.map f) (b.map f)) (f ∘ₗ τ ∘ₗ f.symm)
     := by
   ext i j
   rw [toMatrix_apply, toMatrix_apply]
-  simp only [Basis.map_repr, Basis.map_apply, coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
-    LinearEquiv.symm_apply_apply, LinearEquiv.trans_apply]
+  simp only [Module.Basis.map_repr, Module.Basis.map_apply, coe_comp, LinearEquiv.coe_coe,
+    Function.comp_apply, LinearEquiv.trans_apply, LinearEquiv.symm_apply_apply]
 
 open LinearMap LinearEquiv in
 theorem charpoly_eq_conj_charpoly
@@ -34,7 +34,7 @@ theorem charpoly_eq_conj_charpoly
     := by
   let b := Module.Free.chooseBasis R V
   rw [← charpoly_toMatrix τ b]
-  let b' := Basis.map b f
+  let b' := b.map f
   rw [conj_apply f τ]
   rw [← charpoly_toMatrix ((f.toLinearMap ∘ₗ τ) ∘ₗ f.symm.toLinearMap) b']
   apply congrArg Matrix.charpoly
