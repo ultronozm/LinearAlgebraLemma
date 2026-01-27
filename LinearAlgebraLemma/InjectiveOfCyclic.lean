@@ -60,7 +60,7 @@ theorem comm_poly_of_comm
   rw [Subalgebra.mem_centralizer_iff] at this
   simp only [Set.mem_singleton_iff, forall_eq] at this 
   rw [aux_comm] at this
-  simp only [add_left_eq_self] at this 
+  simp only [add_eq_right] at this 
   exact this
 
 /-
@@ -105,9 +105,7 @@ theorem injective_of_cyclic_0
   rw [← hp]
   have := comm_poly_of_comm τ x hx p
   unfold EvalMap at hp ⊢ 
-  simp only [AlgHom.toNonUnitalAlgHom_eq_coe, NonUnitalAlgHom.toDistribMulActionHom_eq_coe,
-    LinearMap.coe_smulRight, DistribMulActionHom.coe_toLinearMap,
-    NonUnitalAlgHom.coe_to_distribMulActionHom, NonUnitalAlgHom.coe_coe, LinearMap.smul_def] at hp ⊢
+  simp only [LinearMap.coe_smulRight, Module.End.smul_def] at hp ⊢
   exact aux_ann x ((aeval (R := R) τ) p) e h this
 
 /-
@@ -155,7 +153,7 @@ theorem lie_dual
   calc 
   (a * b - b * a).dualMap = (a * b).dualMap - (b * a).dualMap := by
     unfold dualMap
-    rw [LinearMap.map_sub]              
+    simp only [map_sub]              
   _ = (b.dualMap * a.dualMap) - (a.dualMap * b.dualMap) := by rfl
 
 /-
@@ -177,15 +175,15 @@ theorem aux_lie_zero
     exact map_zero Module.Dual.transpose
   rw [lie_dual] at this
   rw [(lie_skew _ _).symm, this]
-  simp only [neg_zero]
+  simp
 
 section transpose
 
 open Matrix
 
 variable {K V₁ V₂ ι₁ ι₂ : Type*} [CommRing K] [AddCommGroup V₁] [Module K V₁] [AddCommGroup V₂]
-  [Module K V₂] [Fintype ι₁] [Fintype ι₂] [DecidableEq ι₁] [DecidableEq ι₂] {B₁ : Basis ι₁ K V₁}
-  {B₂ : Basis ι₂ K V₂}
+  [Module K V₂] [Fintype ι₁] [Fintype ι₂] [DecidableEq ι₁] [DecidableEq ι₂] {B₁ : Module.Basis ι₁ K V₁}
+  {B₂ : Module.Basis ι₂ K V₂}
 
 /-
 
@@ -211,14 +209,14 @@ Duality on finite free modules over a ring is injective.
 open LinearMap Module in
 theorem transpose_injective
     {R : Type} [CommRing R]
-    {V : Type} [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    {V : Type} [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
     {a b : End R V}
     (h : a.dualMap = b.dualMap)
     : a = b := by
   let ι : Type := Module.Free.ChooseBasisIndex R V
   haveI : DecidableEq ι := inferInstance
-  let B : Basis ι R V := Module.Free.chooseBasis R V
-  let B' : Basis ι R (Dual R V) := Basis.dualBasis B
+  let B : Module.Basis ι R V := Module.Free.chooseBasis R V
+  let B' : Module.Basis ι R (Dual R V) := B.dualBasis
   have ha : (toMatrix B' B' (Dual.transpose a)) = (toMatrix B B a).transpose :=
     toMatrix_transpose' (K := R) (B₁ := B) (B₂ := B) a
   have hb : (toMatrix B' B' (Dual.transpose b)) = (toMatrix B B b).transpose :=
