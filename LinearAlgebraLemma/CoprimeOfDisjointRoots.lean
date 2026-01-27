@@ -13,11 +13,9 @@ theorem ideal_map_maximal_of_ideal_maximal
     {B : Type} [CommRing B]
     (f : A ≃+* B)
     (I : Ideal A)
-    (h : I.IsMaximal) 
+    (h : I.IsMaximal)
     : (Ideal.map f I).IsMaximal
-    := by
-  refine Ideal.map.isMaximal f ?hf h
-  exact RingEquiv.bijective f
+    := Ideal.map_isMaximal_of_equiv f
 
 theorem ideal_map_maximal_iff_ideal_maximal
     {A : Type} [CommRing A]
@@ -44,9 +42,12 @@ theorem polynomial_eval_eq_mvpolynomial_punit_eval
   intro f
   induction' p using Polynomial.induction_on' with p q hp hq n a
   · rw [aeval_add, ← hp, ← hq]
-    simp only [map_add, MvPolynomial.pUnitAlgEquiv_symm_apply]
-  simp only [MvPolynomial.pUnitAlgEquiv_symm_apply, eval₂_monomial, map_mul, MvPolynomial.eval_C,
-    map_pow, MvPolynomial.eval_X, aeval_monomial, Algebra.id.map_eq_id, RingHom.id_apply]
+    simp only [map_add]
+  rw [MvPolynomial.pUnitAlgEquiv_symm_apply]
+  rw [eval₂_monomial]
+  rw [aeval_monomial]
+  simp only [Algebra.algebraMap_self, RingHom.id_apply]
+  simp only [map_mul, map_pow, MvPolynomial.eval_C, MvPolynomial.eval_X]
 
 open Polynomial in
 theorem maximal_ideal_vanishes_at_point
@@ -58,7 +59,7 @@ theorem maximal_ideal_vanishes_at_point
   let f : R[X] ≃ₐ[R] (MvPolynomial Unit R) := AlgEquiv.symm (MvPolynomial.pUnitAlgEquiv R)
   let J := Ideal.map (f : R[X] →+* MvPolynomial Unit R) I
   have hJ : J.IsMaximal := (ideal_map_maximal_iff_ideal_maximal (f : R[X] ≃+* MvPolynomial Unit R) I).mp hI
-  have := (MvPolynomial.isMaximal_iff_eq_vanishingIdeal_singleton J).mp hJ
+  have := MvPolynomial.isMaximal_iff_eq_vanishingIdeal_singleton.mp hJ
   rcases this with ⟨c, hc⟩
   use c ()
   have h : ∀ q ∈ J, MvPolynomial.eval (R := R) c q = 0 := by
@@ -110,5 +111,4 @@ theorem coprime_of_disjoint_roots
     constructor
     · exact ⟨hp, hc p hp'⟩
     exact ⟨hq, hc q hq'⟩
-  have := Multiset.eq_zero_iff_forall_not_mem.mp h
-  exact this c h''
+  simp [h] at h''
