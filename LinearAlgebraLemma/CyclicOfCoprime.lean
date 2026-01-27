@@ -295,6 +295,373 @@ theorem cyclic_e'_of_coprime_charpoly_field
   have hτU : ∀ u ∈ U, τ u ∈ U := stable_coannihilator_of_stable_module R τ hτW
   exact no_invariant_subspaces_of_coprime_charpoly R V τ hτ U hU hτU
 
+
+/-
+
+The following pair of results would be useful for extending the above
+from fields to general rings.
+
+-/
+theorem one_not_mem_annihilator_of_not_bot {R : Type} [CommRing R] {M : Type} [AddCommGroup M] [Module R M]
+  (N : Submodule R M)
+  (hN : N ≠ ⊥)
+  : (1 : R) ∉ Submodule.annihilator N := by
+  by_contra a
+  have : ∃ x ∈ N, x ≠ 0 := (Submodule.ne_bot_iff N).mp hN
+  rcases this with ⟨x, hx, hx'⟩
+  have : (1 : R) • x = (0 : M) := by
+    rw [Submodule.mem_annihilator] at a
+    exact a x hx
+  simp only [one_smul] at this
+  exact hx' this
+
+
+theorem exists_maximal_smul_le_of_ne_bot_of_fg {R : Type} [CommRing R] {M : Type} [AddCommGroup M] [Module R M]
+  (N : Submodule R M)
+  (hN : Submodule.FG N)
+  (hN' : N ≠ ⊥)
+  : ∃ P : Ideal R, P.IsMaximal ∧ P • N < N := by
+  set A := Submodule.annihilator N
+  have hA : A ≠ ⊤ := (Ideal.ne_top_iff_one A).mpr (one_not_mem_annihilator_of_not_bot N hN')
+  have : ∃ P : Ideal R, P.IsMaximal ∧ A ≤ P := Ideal.exists_le_maximal A hA
+  rcases this with ⟨P, hP, hP'⟩
+  use P
+  use hP
+  show P • N < N
+  by_contra hPN
+  have : P • N ≤ N := Submodule.smul_le_right
+  have : P • N = N ∨ P • N < N := LE.le.eq_or_lt this
+  have : P • N = N := by
+    cases this
+    · assumption
+    contradiction
+  have hPN' : N ≤ P • N := Eq.le (id this.symm)
+  have := Submodule.exists_sub_one_mem_and_smul_eq_zero_of_fg_of_le_smul P N hN hPN'
+  rcases this with ⟨r, hr, hr'⟩
+  have : r ∈ A := by
+    rw [Submodule.mem_annihilator]
+    exact hr'
+  have : r ∈ P := hP' this
+  have := (Submodule.sub_mem_iff_right P this).mp hr
+  have : P = ⊤ := (Ideal.eq_top_iff_one P).mpr this
+  exact Ideal.IsPrime.ne_top' this
+
+
+
+#check Submodule.smul_mem_smul
+
+
+/-
+
+We have an isomorphism R^n → V.
+
+We want to say that it induces an isomorphism (R/P)^N → V/PV.
+
+-/
+
+
+
+instance
+    (R : Type) [CommRing R] [Nontrivial R]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Free R V]
+    (I : Ideal R)
+    : Module.Free (R ⧸ I) (V ⧸ (I • (⊤ : Submodule R V) : Submodule R V))
+    := by
+    sorry
+
+instance
+    (R : Type) [CommRing R] [Nontrivial R]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Finite R V]
+    (I : Ideal R)
+    : Module.Finite (R ⧸ I) (V ⧸ (I • (⊤ : Submodule R V) : Submodule R V))
+    := by
+    sorry
+
+
+open Module in
+theorem aux_isom_thms
+  (R : Type) [CommRing R]
+  (V : Type) [AddCommGroup V] [Module R V]
+  (W : Submodule R V)
+  (P : Ideal R)
+  :
+  let M := V ⧸ W
+  let N : Submodule R M := ⊤
+  (⊤ : Submodule R V) ≤ W ⊔ (P • (⊤ : Submodule R V)) → N ≤ P • N := by
+  -- intro M N ⟨ hN_ne_bot, hPN_lt_N, hW_ne_top, htop_le_W_join_Ptop ⟩
+  intro M N h
+  set π : V →ₗ[R] M := Submodule.mkQ W
+  intro x _
+  rcases Submodule.mkQ_surjective W x with ⟨ x', hx' ⟩
+  have : x' ∈ (⊤ : Submodule R V) := by
+    simp only [Submodule.mem_top]
+  have := h this
+  have := Submodule.mem_sup.mp this
+  rcases this with ⟨ w, hw, p, hp, hpw ⟩
+  rw [← hx', ← hpw]
+  rw [map_add]
+  have : π w = 0 := by
+    simp only [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
+    exact hw
+  rw [this]
+  clear hpw
+  have hN_all : ∀ y : M, y ∈ N := by
+    unfold_let N
+    simp only [Submodule.mem_top, forall_const]
+  induction' hp using Submodule.smul_induction_on' with p hp v hv v hv v' hv' h₁ h₂
+  · rw [map_smul]
+    simp only [Submodule.mkQ_apply, zero_add]
+    apply Submodule.smul_mem_smul hp _
+    apply hN_all _
+  simp only [top_le_iff, Submodule.mem_top, Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero,
+    forall_const, zero_add, map_add] at *
+  exact Submodule.add_mem _ h₁ h₂
+
+
+open Polynomial Function in
+theorem mapRingHom_surjective
+  (R : Type) [CommRing R]
+  (S : Type) [CommRing S]
+  (f : R →+* S)
+  (hf : Surjective f)
+  : Surjective (mapRingHom f)
+  := by
+  sorry
+
+
+/-
+
+Let τ be an endomorphism of R^{n+1} ≃ R^n × R whose characteristic
+polynomial is coprime to that of its upper-left n×n block.  Then the
+row-vector (0,1) is τ-cyclic.  R is any nontrivial commutative ring.
+
+-/
+set_option synthInstance.maxHeartbeats 1000000
+set_option maxHeartbeats 1000000
+open Module Polynomial in
+theorem cyclic_e'_of_coprime_charpoly
+    (R : Type) [CommRing R] [Nontrivial R]
+    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (τ : End R (V × R))
+    (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
+    :
+    let e' : Dual R (V × R) := LinearMap.snd R V R
+    Cyclic R τ.dualMap e'
+    := by
+  intro e'
+  let W : Submodule R (Dual R (V × R)) := LinearMap.range (EvalMap τ.dualMap e')
+  suffices : W = ⊤
+  · unfold Cyclic
+    rw [LinearMap.range_eq_top] at this
+    exact this
+  by_contra hW_ne_top
+  let M := (Dual R (V × R)) ⧸ W
+  have Mdef : M = ((Dual R (V × R)) ⧸ W) := rfl
+  let N : Submodule R M := ⊤
+  have hN_ne_bot : N ≠ ⊥ := by
+    have := Submodule.Quotient.nontrivial_of_lt_top W (Ne.lt_top hW_ne_top)
+    exact top_ne_bot
+  have hN_fg : Submodule.FG N := Finite.out
+  have : ∃ P : Ideal R, P.IsMaximal ∧ P • N < N :=
+    exists_maximal_smul_le_of_ne_bot_of_fg N hN_fg hN_ne_bot
+  rcases this with ⟨P, hP, hP'⟩
+  absurd hP'
+  suffices : N ≤ P • N
+  · exact not_lt_of_le this
+  set X := (⊤ : Submodule R (Dual R (V × R)))
+  suffices : X ≤ W ⊔ (P • X)
+  · have blah := aux_isom_thms R (Dual R (V × R)) X P
+    have blah' : ⊤ ≤ X ⊔ P • ⊤ := by sorry
+    have := blah blah'
+    have Ndef : N = ⊤ := by sorry
+    rw [Ndef]
+    sorry
+  intro x _
+  suffices : ∃ p : R[X], EvalMap τ.dualMap e' p - x ∈ P • X
+  · rcases this with ⟨ p, hp ⟩
+    set w := EvalMap τ.dualMap e' p with hw₀
+    set d := w - x
+    have hw : w ∈ W := by
+      rw [LinearMap.mem_range]
+      use p
+    apply (Submodule.mem_sup (R := R) (p := W) (p' := P • X)).mpr
+    use w
+    use hw
+    use -d
+    constructor
+    · exact Submodule.neg_mem (P • X) hp
+    simp only [neg_sub, add_sub_cancel, d]
+  set R_mod_P := R ⧸ P
+  let V_mod_P := V ⧸ (P • (⊤ : Submodule R V) : Submodule R V)
+  let τ_mod_P : End R_mod_P (V_mod_P × R_mod_P) := by
+    sorry
+  -- have : AddCommGroup V_mod_P := inferInstance
+  -- have : Module (R ⧸ P) V_mod_P := inferInstance
+  -- have : Free (R ⧸ P) V_mod_P := inferInstance
+  -- have : Finite (R ⧸ P) V_mod_P := inferInstance
+  have hτ_mod_P : IsCoprime τ_mod_P.charpoly (upperLeftProj R_mod_P V_mod_P R_mod_P τ_mod_P).charpoly := by
+    sorry
+  set π : R →ₐ[R] R ⧸ P := Ideal.Quotient.mkₐ R P
+  let X_mod_P := (⊤ : Submodule R_mod_P (Dual R_mod_P (V_mod_P × R_mod_P)))
+  letI : Field (R ⧸ P) := Ideal.Quotient.field P
+  have field_case := cyclic_e'_of_coprime_charpoly_field R_mod_P V_mod_P τ_mod_P hτ_mod_P
+  let πX : (Dual R (V × R)) →ₗ[R] (Dual R_mod_P (V_mod_P × R_mod_P)) :=
+    sorry
+  let x_mod_P : X_mod_P := by
+    use πX x
+    simp
+  rcases field_case x_mod_P with ⟨ p_mod_P, hp_mod_P ⟩
+  rcases mapRingHom_surjective R R_mod_P π (Ideal.Quotient.mkₐ_surjective R P) p_mod_P with ⟨ p, hp ⟩
+  use p
+  have eval_commutes_reduction : ∀ y : Dual R (V × R), πX ((EvalMap τ.dualMap y) p) = ((EvalMap τ_mod_P.dualMap (πX y)) p_mod_P) := by
+    sorry
+  have kernel_eval : ∀ y : Dual R (V × R), πX y = 0 → y ∈ P • X := by
+    sorry
+  set y := (EvalMap (LinearMap.dualMap τ) e') p - x
+  show y ∈ P • X
+  have this : πX y = 0 := by
+    simp
+    sorry
+  exact kernel_eval y this
+
+
+/-
+
+We are given τ ∈ End(V × R).
+
+1. We want to define τ_P ∈ End(V_P × R_P).  Here a subscripted P means "mod out" (rather than "localize").
+
+  Well, we have a canoncial map End(V × R) → End((V × R)_P) that you've already defined, so I guess
+  we just need to conjugate this last map by the isomorphism (V × R)_P ≅ V_P × R_P.
+
+2. We want to know that its characteristic polynomials are obtained via reduction.
+
+3. I guess we want to define it to be compatible with the reduction map πX : (V × R)' → (V_P × R_P)'.
+
+4. We want evaluation to commute with reduction.
+
+  This last assertion is critical, so let's spell out why it should be the case.
+
+  Focus on what it would say if we were working with standard (rather than dual) actions.
+
+  It would say that for each y ∈ V × R, with image y_P ∈ V_P × R_P, we have (f(τ) y)_P = f(τ_P) y_P
+  for any polynomial f in R[X].  In the second case, I guess we work implicitly with the reduction
+  of f modulo P.
+
+  This should follow from expanding out the definition of τ_P.
+
+5. We'll also need to compute the kernel of the reduction map.  Again, simple.
+
+These are all general results about V₁ × V₂.  We can take endomorphisms of it, mod
+everything out by an ideal, etc.  Maybe they're really about how tensor product behaves
+with respect to direct sum?
+
+I guess LinearAlgebra/TensorProduct/Prod.lean would be relevant if you could work with tensor products instead.
+
+-/
+
+example
+  (R : Type) [CommRing R]
+  (V : Type) [AddCommGroup V] [Module R V]
+  (I : Ideal R)
+  : V →ₗ[R] (V ⧸ (I • (⊤ : Submodule R V)))
+  := Submodule.mkQ (I • ⊤)
+
+-- The kernel of V → V/PV is PV.
+example
+  (R : Type) [CommRing R]
+  (V : Type) [AddCommGroup V] [Module R V]
+  (I : Ideal R)
+  : LinearMap.ker (Submodule.mkQ (I • (⊤ : Submodule R V))) = I • ⊤
+  := Submodule.ker_mkQ (I • ⊤)
+
+example
+  (R : Type) [CommRing R]
+  (V : Type) [AddCommGroup V] [Module R V]
+  (I : Ideal R)
+  (v : V)
+  :
+  (V ⧸ (I • (⊤ : Submodule R V)))
+  := Submodule.Quotient.mk v
+
+example
+  (R : Type) [CommRing R]
+  (V : Type) [AddCommGroup V] [Module R V]
+  :
+  R →ₗ[R] V →ₗ[R] V
+  := LinearMap.lsmul R V
+
+open TensorProduct in
+noncomputable example
+  (R : Type) [CommRing R]
+  (U : Type) [AddCommGroup U] [Module R U]
+  (V : Type) [AddCommGroup V] [Module R V]
+  (W : Type) [AddCommGroup W] [Module R W]
+  (f : U →ₗ[R] V →ₗ[R] W)
+  :
+  U ⊗[R] V →ₗ[R] W
+  := lift f
+
+#check TensorProduct.uncurry
+
+open TensorProduct in
+noncomputable example
+  (R : Type) [CommRing R]
+  (V : Type) [AddCommGroup V] [Module R V]
+  :
+  R ⊗[R] V →ₗ[R] V
+  := lift (LinearMap.lsmul R V) -- or (TensorProduct.uncurry R R V V)
+
+open TensorProduct in
+noncomputable example
+  (R : Type) [CommRing R]
+  (V : Type) [AddCommGroup V] [Module R V]
+  (I : Ideal R)
+  :
+  (R ⧸ I) ⊗[R ⧸ I] (V ⧸ (I • (⊤ : Submodule R V))) →ₗ[R] (V ⧸ (I • (⊤ : Submodule R V)))
+  := lift (LinearMap.lsmul (R ⧸ I) (V ⧸ (I • (⊤ : Submodule R V))))
+
+open TensorProduct in
+noncomputable example
+  (R : Type) [CommRing R]
+  (S : Type) [CommRing S] [Algebra R S]
+  (M : Type) [AddCommGroup M] [Module S M] [Module R M] [IsScalarTower R S M]
+  (N : Type) [AddCommGroup N] [Module S N] [Module R N] [IsScalarTower R S N]
+  : M ⊗[S] N →ₗ[R] M ⊗[R] N
+  := by
+  sorry
+
+example
+  (R : Type) [CommRing R]
+  (V : Type) [AddCommGroup V] [Module R V]
+  (I : Ideal R)
+  :
+  V →ₗ[R] (R ⧸ I) →ₗ[R] (V ⧸ (I • (⊤ : Submodule R V)))
+  := by
+/-
+
+Combine the previous two examples, using the R-linear reduction map on V.
+
+-/
+  sorry
+
+/-
+
+There's an obvious bilinear map here, namely
+
+R/I ⊗ V/IV → V/IV.
+
+We should pull this back under the identity on the first factor and the quotient map from
+V on the second.
+
+There's also some stuff in Algebra/Category/ModuleCat/ChangeOfRings.lean
+
+-/
+
+
+
+
+
 /-
 
 ********************************************************************************
