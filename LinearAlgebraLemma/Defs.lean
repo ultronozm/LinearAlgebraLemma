@@ -20,9 +20,10 @@ def upperLeftProj
     (R : Type) [CommSemiring R]
     (V₁ : Type) [AddCommGroup V₁] [Module R V₁]
     (V₂ : Type) [AddCommGroup V₂] [Module R V₂]
-    : Module.End R (V₁ × V₂) →ₗ[R] Module.End R V₁ :=
-  (LinearMap.lcomp _ _ $ LinearMap.inl R V₁ V₂)
-    ∘ₗ (LinearMap.compRight $ LinearMap.fst R V₁ V₂)
+    : Module.End R (V₁ × V₂) →ₗ[R] Module.End R V₁ where
+  toFun x := (LinearMap.fst R V₁ V₂) ∘ₗ x ∘ₗ (LinearMap.inl R V₁ V₂)
+  map_add' x y := by simp only [LinearMap.add_comp, LinearMap.comp_add]
+  map_smul' r x := by simp only [LinearMap.smul_comp, LinearMap.comp_smul, RingHom.id_apply]
 
 @[simp]
 theorem upperLeftProj_apply
@@ -36,9 +37,10 @@ def upperLeftIncl
     (R : Type) [CommSemiring R]
     (V₁ : Type) [AddCommGroup V₁] [Module R V₁]
     (V₂ : Type) [AddCommGroup V₂] [Module R V₂]
-    : Module.End R V₁ →ₗ[R] Module.End R (V₁ × V₂) :=
-  (LinearMap.lcomp _ _ $ LinearMap.fst R V₁ V₂)
-    ∘ₗ (LinearMap.compRight $ LinearMap.inl R V₁ V₂)
+    : Module.End R V₁ →ₗ[R] Module.End R (V₁ × V₂) where
+  toFun x := (LinearMap.inl R V₁ V₂) ∘ₗ x ∘ₗ (LinearMap.fst R V₁ V₂)
+  map_add' x y := by simp only [LinearMap.add_comp, LinearMap.comp_add]
+  map_smul' r x := by simp only [LinearMap.smul_comp, LinearMap.comp_smul, RingHom.id_apply]
 
 @[simp]
 theorem upperLeftIncl_apply
