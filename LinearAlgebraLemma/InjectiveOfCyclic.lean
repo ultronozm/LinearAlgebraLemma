@@ -53,14 +53,14 @@ theorem comm_poly_of_comm
   let s := Subalgebra.centralizer R {x}
   have hτ : τ ∈ s := by
     rw [Subalgebra.mem_centralizer_iff]
-    simp
+    simp only [Set.mem_singleton_iff, forall_eq]
     rw [aux_comm x τ, hx]
-    simp
+    simp only [zero_add]
   have : (aeval (R := R) τ) p ∈ s := subalg_closed_under_poly s τ hτ p
   rw [Subalgebra.mem_centralizer_iff] at this
-  simp at this
+  simp only [Set.mem_singleton_iff, forall_eq] at this 
   rw [aux_comm] at this
-  simp at this
+  simp only [add_left_eq_self] at this 
   exact this
 
 /-
@@ -77,7 +77,7 @@ theorem aux_ann
     (h₂ : ⁅a, b⁆ = 0)
     : a • (b • v) = 0 := by
   rw [smul_smul a b v, aux_comm a b, add_smul, ← smul_smul b a v, h₁, h₂]
-  simp
+  simp only [zero_smul, smul_zero, add_zero]
 
 /-
 
@@ -101,11 +101,13 @@ theorem injective_of_cyclic_0
     := by
   ext v
   rcases hcyc v with ⟨p, hp⟩
-  simp
+  simp only [LinearMap.zero_apply]
   rw [← hp]
   have := comm_poly_of_comm τ x hx p
   unfold EvalMap at hp ⊢ 
-  simp at hp ⊢
+  simp only [AlgHom.toNonUnitalAlgHom_eq_coe, NonUnitalAlgHom.toDistribMulActionHom_eq_coe,
+    LinearMap.coe_smulRight, DistribMulActionHom.coe_toLinearMap,
+    NonUnitalAlgHom.coe_to_distribMulActionHom, NonUnitalAlgHom.coe_coe, LinearMap.smul_def] at hp ⊢
   exact aux_ann x ((aeval (R := R) τ) p) e h this
 
 /-
@@ -134,7 +136,7 @@ theorem injective_of_cyclic
   have hxsuby: ⁅x-y, τ⁆ = 0 := by
     rw [sub_lie x y τ]
     rw [hx, hy]
-    simp
+    simp only [sub_self]
   replace h := injective_of_cyclic_0 τ e hcyc (x - y) hxsuby h
   exact sub_eq_zero.mp h
 
@@ -175,7 +177,7 @@ theorem aux_lie_zero
     exact map_zero Module.Dual.transpose
   rw [lie_dual] at this
   rw [(lie_skew _ _).symm, this]
-  simp
+  simp only [neg_zero]
 
 section transpose
 

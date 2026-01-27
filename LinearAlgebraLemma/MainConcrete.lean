@@ -29,7 +29,10 @@ theorem toMatrix_basis_map
     :
     (toMatrix (bV.map fV) (bW.map fW) (fW ∘ₗ x ∘ₗ fV.symm)) = (toMatrix bV bW x) := by
   ext i j
-  simp [toMatrix]
+  simp only [toMatrix, Basis.map_equivFun, trans_apply, toMatrix'_apply, arrowCongr_apply,
+    trans_symm, symm_symm, Basis.equivFun_symm_apply, ite_smul, one_smul, zero_smul,
+    Finset.sum_ite_eq', Finset.mem_univ, ite_true, coe_comp, coe_coe, Function.comp_apply,
+    symm_apply_apply, Basis.equivFun_apply]
 
 open LinearMap Sum LinearEquiv in
 theorem matrix_conj
@@ -44,7 +47,7 @@ theorem matrix_conj
     (toMatrix (b.map f) (b.map f) (conj f x)) = (toMatrix b b x) := by
   have : conj f x = f ∘ₗ x ∘ₗ f.symm := rfl
   rw [this]
-  simp [toMatrix_basis_map]
+  simp only [toMatrix_basis_map]
 
 open Basis in
 theorem basis_map_comp
@@ -67,7 +70,7 @@ theorem basis_map_cancel
     (b : Basis I R U)
     (f : U ≃ₗ[R] V)
     : (b.map f).map (f.symm) = b := by
-  simp [← basis_map_comp]
+  simp only [← basis_map_comp, LinearEquiv.self_trans_symm]
   rfl
 
 open Basis in
@@ -79,7 +82,7 @@ theorem basis_map_cancel'
     (b : Basis I R U)
     (f : V ≃ₗ[R] U)
     : (b.map f.symm).map f = b := by
-  simp [← basis_map_comp]
+  simp only [← basis_map_comp, LinearEquiv.symm_trans_self]
   rfl
 
 open LinearMap Sum LinearEquiv in
@@ -110,7 +113,10 @@ theorem matrix_basis_reindex
     :
     (toMatrix (b.reindex e) (b.reindex e) x) i j
     = (toMatrix b b x) (e.symm i) (e.symm j) := by
-  simp [toMatrix]
+  simp only [toMatrix, LinearEquiv.trans_apply, toMatrix'_apply, LinearEquiv.arrowCongr_apply,
+    Basis.equivFun_symm_apply, Basis.coe_reindex, Function.comp_apply, ite_smul, one_smul,
+    zero_smul, Finset.sum_ite_eq', Finset.mem_univ, ite_true, Basis.equivFun_apply,
+    Basis.repr_reindex, Finsupp.mapDomain_equiv_apply]
 
 open Module Matrix LinearEquiv LinearMap in
 theorem matrix_conj''
@@ -133,7 +139,7 @@ theorem matrix_conj''
   simp only [symm_symm]
   rw [hbef]
   rw [matrix_basis_reindex R bV e.symm (toLin bV bV x) i j]
-  simp
+  simp only [Equiv.symm_symm, toMatrix_toLin]
 
 /-
 
@@ -160,11 +166,26 @@ theorem matrix_incl_entries
     | Sum.inr _, Sum.inr _ => 0 := by
   induction' i with i
   induction' j with j
-  simp [LinearMap.toMatrix]
-  simp [LinearMap.toMatrix]
+  simp only [LinearMap.toMatrix, LinearEquiv.trans_apply, toMatrix'_apply,
+    LinearEquiv.arrowCongr_apply, equivFun_symm_apply, Basis.prod_apply, coe_inl, coe_inr, ite_smul,
+    one_smul, zero_smul, Finset.sum_ite_eq', Finset.mem_univ, elim_inl, Function.comp_apply,
+    ite_true, coe_comp, fst_apply, equivFun_apply, prod_repr_inl]
+  simp only [LinearMap.toMatrix, LinearEquiv.trans_apply, toMatrix'_apply,
+    LinearEquiv.arrowCongr_apply, equivFun_symm_apply, Basis.prod_apply, coe_inl, coe_inr, ite_smul,
+    one_smul, zero_smul, Finset.sum_ite_eq', Finset.mem_univ, elim_inr, Function.comp_apply,
+    ite_true, coe_comp, fst_apply, map_zero, equivFun_apply, prod_repr_inl, Finsupp.coe_zero,
+    Pi.zero_apply]
   induction' j with j
-  simp [LinearMap.toMatrix]
-  simp [LinearMap.toMatrix]
+  simp only [LinearMap.toMatrix, LinearEquiv.trans_apply, toMatrix'_apply,
+    LinearEquiv.arrowCongr_apply, equivFun_symm_apply, Basis.prod_apply, coe_inl, coe_inr, ite_smul,
+    one_smul, zero_smul, Finset.sum_ite_eq', Finset.mem_univ, elim_inl, Function.comp_apply,
+    ite_true, coe_comp, fst_apply, equivFun_apply, prod_repr_inr, map_zero, Finsupp.coe_zero,
+    Pi.zero_apply]
+  simp only [LinearMap.toMatrix, LinearEquiv.trans_apply, toMatrix'_apply,
+    LinearEquiv.arrowCongr_apply, equivFun_symm_apply, Basis.prod_apply, coe_inl, coe_inr, ite_smul,
+    one_smul, zero_smul, Finset.sum_ite_eq', Finset.mem_univ, elim_inr, Function.comp_apply,
+    ite_true, coe_comp, fst_apply, map_zero, equivFun_apply, prod_repr_inr, Finsupp.coe_zero,
+    Pi.zero_apply]
 
 /-
 
@@ -192,21 +213,21 @@ theorem matrix_incl_entries'
   set b := b₁.prod b₂
   set y := (toMatrix b b ((inl R V₁ V₂) ∘ₗ (toLin b₁ b₁ x) ∘ₗ (fst R V₁ V₂)))
   have : (inl R V₁ V₂) ∘ₗ (toLin b₁ b₁ x) ∘ₗ (fst R V₁ V₂) = toLin b b y := by
-    simp [y]
+    simp only [toLin_toMatrix]
   rw [this]
   ext i j
   rw [← toMatrix_eq_toMatrix']
   rw [matrix_conj'' R (I → R) (V₁ × V₂) (Pi.basisFun R I) b e f hbef y i j]
   unfold_let y
   rw [matrix_incl_entries R V₁ V₂ b₁ b₂ ((toLin b₁ b₁) x) (e i) (e j)]
-  simp
+  simp only [toMatrix_toLin]
   induction' e i with _ _
   induction' e j with _ _
-  simp
-  simp
+  simp only
+  simp only
   induction' e j with _ _
-  simp
-  simp
+  simp only
+  simp only
 
 /-
 
@@ -227,7 +248,10 @@ theorem matrix_proj_entries
     :
     (toMatrix b₁ b₁ ((fst R V₁ V₂) ∘ₗ x ∘ₗ (inl R V₁ V₂))) i j
     = (toMatrix (Basis.prod b₁ b₂) (Basis.prod b₁ b₂) x) (inl i) (inl j) := by
-  simp [toMatrix]
+  simp only [toMatrix, LinearEquiv.trans_apply, toMatrix'_apply, LinearEquiv.arrowCongr_apply,
+    Basis.equivFun_symm_apply, ite_smul, one_smul, zero_smul, Finset.sum_ite_eq', Finset.mem_univ,
+    ite_true, coe_comp, coe_inl, Function.comp_apply, fst_apply, Basis.equivFun_apply,
+    Basis.prod_apply, coe_inr, elim_inl, Basis.prod_repr_inl]
 
 open Basis in
 theorem basis_map_commutes_reindex
@@ -269,22 +293,23 @@ theorem matrix_proj_entries'
   have : f = f.symm.symm := rfl
   rw [this]
   have hbef' : b.map f.symm = (Pi.basisFun R I).reindex e.symm.symm := by
-    simp [hbef]
+    simp only [Equiv.symm_symm]
     have : (Pi.basisFun R I) = (b.reindex e.symm).map f.symm := by
       calc
       _ = ((Pi.basisFun R I).map f).map f.symm := by
         ext i
-        simp
+        simp only [Pi.basisFun_apply, stdBasis_apply', Basis.map_apply, symm_apply_apply]
       _ = (b.reindex e.symm).map f.symm := by
         rw [hbef]
     rw [this]
     have : b.map f.symm = ((b.map f.symm).reindex e.symm).reindex e := by
       ext i
-      simp
+      simp only [Basis.map_apply, Basis.prod_apply, coe_inl, coe_inr, Basis.coe_reindex,
+        Equiv.symm_symm, Function.comp_apply, Equiv.apply_symm_apply]
     rw [this]
     rw [basis_map_commutes_reindex]
   rw [matrix_conj'' R (V₁ × V₂) (I → R) b (Pi.basisFun R I) e.symm f.symm hbef' _ _ _]
-  simp
+  simp only [submatrix_apply, Function.comp_apply]
 
 abbrev Mat (R : Type) [Ring R] (n : ℕ) := Matrix (Fin n) (Fin n) R
 
@@ -301,7 +326,7 @@ theorem charpoly_eq_toLin_charpoly {R : Type} [CommRing R] [Nontrivial R] {n : �
   let y := toLin' x
   calc
   _ = Matrix.charpoly x := by rfl
-  _ = Matrix.charpoly (toMatrix' y) := by simp
+  _ = Matrix.charpoly (toMatrix' y) := by simp only [toMatrix'_toLin']
   _ = y.charpoly := toMatrix_charpoly_eq_charpoly y
 
 /-
@@ -365,7 +390,7 @@ theorem charpoly_eq_conj_decomp_toLin_charpoly {R : Type} [CommRing R] [Nontrivi
     : x.charpoly = (conj decomp $ toLin' x).charpoly := by
   let y := (conj decomp $ toLin' x)
   have hy : x = (toMatrix' $ conj decomp.symm y) := by
-    simp [conj_cancel]
+    simp only [conj_cancel, toMatrix'_toLin']
   show Matrix.charpoly x = LinearMap.charpoly (conj decomp $ toLin' x)
   rw [charpoly_eq_toMatrix_conj_decomp_symm_charpoly y, hy]
 
@@ -380,7 +405,7 @@ theorem lie_map_of_ring_hom
   rw [Ring.lie_def] at *
   rw [←f.map_mul, ←f.map_mul, ←f.map_sub]
   rw [h]
-  simp
+  simp only [map_zero]
 
 theorem lie_map_of_ring_hom'
     (R : Type) [CommRing R]
@@ -433,11 +458,11 @@ theorem finSumFinEquiv_one_eq_last_iff (n : ℕ)
     | Sum.inr _ => True
     := by
   unfold finSumFinEquiv
-  simp
+  simp only [Equiv.coe_fn_mk, eq_iff_iff]
   induction' i with i i
-  · simp
+  · simp only [Sum.elim_inl, iff_false]
     exact castAdd_one_ne_last n i
-  simp
+  simp only [Sum.elim_inr, iff_true]
   exact natAdd_fin_one_eq_last n i
 
 /-
@@ -483,57 +508,59 @@ theorem matrixIncl_eq_matrixIncl' {R : Type} [Ring R]
   unfold matrixIncl
   unfold matrixIncl'
   by_cases h : i ≠ Fin.last n ∧ j ≠ Fin.last n
-  simp [h]
+  simp only [ne_eq, h, not_false_eq_true, and_self, dite_true]
   induction' hi : finSumFinEquiv.symm i with i' i'
   induction' hj : finSumFinEquiv.symm j with j' j'
-  · simp [h.1, h.2]
+  · simp only
     have : i = finSumFinEquiv (Sum.inl i') := by
      rw [← hi]
-     simp
-    simp [this]
+     simp only [Equiv.apply_symm_apply]
+    simp only [this, finSumFinEquiv_apply_left, Fin.coe_castAdd, Fin.eta]
     have : j = finSumFinEquiv (Sum.inl j') := by
       rw [← hj]
-      simp
-    simp [this]
-  · simp [h.1, h.2]
+      simp only [Equiv.apply_symm_apply]
+    simp only [this, finSumFinEquiv_apply_left, Fin.coe_castAdd, Fin.eta]
+  · simp only
     have : j = finSumFinEquiv (Sum.inr j') := by
       rw [← hj]
-      simp
+      simp only [Equiv.apply_symm_apply]
     replace h := h.2
     rw [this] at h
     have := finSumFinEquiv_one_eq_last_iff n (Sum.inr j')
     absurd h
     rw [this]
-    simp
+    simp only
   induction' hj : finSumFinEquiv.symm j with j' j'
-  · simp [h.1, h.2]
+  · simp only
     have : i = finSumFinEquiv (Sum.inr i') := by
      rw [← hi]
-     simp
+     simp only [Equiv.apply_symm_apply]
     replace h := h.1
     rw [this] at h
     have := finSumFinEquiv_one_eq_last_iff n (Sum.inr i')
     absurd h
     rw [this]
-    simp
-  · simp [h.1, h.2]
+    simp only
+  · simp only
     have : i = finSumFinEquiv (Sum.inr i') := by
      rw [← hi]
-     simp
+     simp only [Equiv.apply_symm_apply]
     replace h := h.1
     rw [this] at h
     have := finSumFinEquiv_one_eq_last_iff n (Sum.inr i')
     absurd h
     rw [this]
-    simp
+    simp only
   push_neg at h
-  simp [h]
+  simp only [ne_eq]
   by_cases h' : i = Fin.last n
-  · simp [h']
-  simp [h']
+  · simp only [h', not_true_eq_false, false_and, Fin.val_last, dite_false,
+    finSumFinEquiv_symm_last]
+  simp only [h', not_false_eq_true, true_and, dite_not]
   replace h := h h'
   rw [h]
-  simp
+  simp only [Fin.val_last, dite_true, finSumFinEquiv_symm_last, IsEmpty.forall_iff, implies_true,
+    matrixIncl'.match_1.eq_2]
 
 
 /-
@@ -550,25 +577,39 @@ theorem aux_reindex_bases
     let e := finSumFinEquiv.symm;
     (Pi.basisFun R (Fin (n + 1))).map decomp = (b₁.prod b₂).reindex e.symm := by
   ext i i'
-  · simp
+  · simp only [Basis.map_apply, Pi.basisFun_apply, Equiv.symm_symm, coe_reindex,
+    Function.comp_apply, Basis.prod_apply, coe_inl, coe_inr]
     by_cases h : i = Fin.castAdd 1 i'
-    · simp [h, decomp]
-    simp [h, decomp]
+    · simp only [decomp, h, trans_apply, LinearEquiv.prod_apply, refl_apply, funUnique_apply,
+      Function.eval, Fin.default_eq_zero, sumArrowLequivProdArrow_apply_snd,
+      piCongrLeft'_symm_apply, finSumFinEquiv_apply_right, stdBasis_apply', eq_rec_constant,
+      sumArrowLequivProdArrow_apply_fst, finSumFinEquiv_apply_left, ite_true,
+      finSumFinEquiv_symm_apply_castAdd, Sum.elim_inl, Function.comp_apply, Pi.basisFun_apply]
+    simp only [decomp, trans_apply, LinearEquiv.prod_apply, refl_apply, funUnique_apply,
+      Function.eval, Fin.default_eq_zero, sumArrowLequivProdArrow_apply_snd,
+      piCongrLeft'_symm_apply, finSumFinEquiv_apply_right, stdBasis_apply', eq_rec_constant,
+      sumArrowLequivProdArrow_apply_fst, finSumFinEquiv_apply_left, h, ite_false]
     induction' h' : finSumFinEquiv.symm i with k k
-    · simp
+    · simp only [Sum.elim_inl, Function.comp_apply, Pi.basisFun_apply, stdBasis_apply']
       have : i = finSumFinEquiv (Sum.inl k) := (Equiv.symm_apply_eq finSumFinEquiv).mp h'
       rw [this] at h
       have : k ≠ i' := ne_of_apply_ne (fun k => finSumFinEquiv (Sum.inl k)) h
       exact (if_neg this).symm
-    simp
-  simp
+    simp only [Sum.elim_inr, Function.comp_apply, singleton_apply, Pi.zero_apply]
+  simp only [Basis.map_apply, Pi.basisFun_apply, Equiv.symm_symm, coe_reindex, Function.comp_apply,
+    Basis.prod_apply, coe_inl, coe_inr]
   by_cases h : i = Fin.natAdd n 0
-  · simp [h, decomp]
-  simp [h, decomp]
+  · simp only [decomp, h, trans_apply, LinearEquiv.prod_apply, refl_apply, funUnique_apply,
+    Function.eval, Fin.default_eq_zero, sumArrowLequivProdArrow_apply_snd, piCongrLeft'_symm_apply,
+    finSumFinEquiv_apply_right, stdBasis_apply', ite_true, eq_rec_constant,
+    finSumFinEquiv_symm_apply_natAdd, Sum.elim_inr, Function.comp_apply, singleton_apply]
+  simp only [decomp, trans_apply, LinearEquiv.prod_apply, refl_apply, funUnique_apply,
+    Function.eval, Fin.default_eq_zero, sumArrowLequivProdArrow_apply_snd, piCongrLeft'_symm_apply,
+    finSumFinEquiv_apply_right, stdBasis_apply', h, ite_false, eq_rec_constant]
   induction' h' : finSumFinEquiv.symm i with k k
-  · simp
+  · simp only [Sum.elim_inl, Function.comp_apply, Pi.basisFun_apply]
   have := finSumFinEquiv_one_eq_last_iff n (Sum.inr k)
-  simp at this
+  simp only [finSumFinEquiv_apply_right, eq_iff_iff, iff_true] at this 
   have h'' : i = finSumFinEquiv (Sum.inr k) := by exact (Equiv.symm_apply_eq finSumFinEquiv).mp h'
   have : i = Fin.last n := by
     rw [← this]
@@ -604,15 +645,14 @@ theorem aux_upper_left_incl_equivariance {R : Type} [CommRing R] {n : ℕ}
   rw [matrix_incl_entries' R (Fin n → R) R b₁ b₂ e decomp hbef y]
   rw [matrixIncl_eq_matrixIncl']
   ext i j
-  simp
+  simp only [matrixIncl'_apply]
   induction' e i
   induction' e j
-  simp
-  simp
+  simp only
+  simp only [matrixIncl'_apply]
   induction' e j
-  simp
-  simp
-
+  simp only
+  simp only
 
 /-
 
@@ -632,7 +672,7 @@ theorem aux_upper_left_proj_equivariance {R : Type} [CommRing R] {n : ℕ}
     replace this := congrArg toLin' this
     rw [← this]
     ext i j
-    simp
+    simp only [coe_comp, coe_inl, coe_single, Function.comp_apply, fst_apply, toLin'_toMatrix']
   rw [← toMatrix_eq_toMatrix']
   let b₁ : Basis (Fin n) R (Fin n → R) := Pi.basisFun R (Fin n)
   let b₂ : Basis (Fin 1) R R := Basis.singleton (Fin 1) R
@@ -641,7 +681,8 @@ theorem aux_upper_left_proj_equivariance {R : Type} [CommRing R] {n : ℕ}
     aux_reindex_bases R n
   rw [matrix_proj_entries' R (Fin n → R) R b₁ b₂ e decomp hbef _]
   ext i j
-  simp
+  simp only [Equiv.symm_symm, submatrix_apply, Function.comp_apply, finSumFinEquiv_apply_left,
+    id_eq]
 
 /-
 
@@ -700,7 +741,7 @@ theorem aux_commutator_equivariance {R : Type} [CommRing R] {n : ℕ}
   have h1H : upperLeftIncl R V R 1 = conj decomp (toLin' (matrixIncl (1 : Mat R n))) := by
     rw [← aux_upper_left_incl_equivariance 1]
     congr
-    simp
+    simp only [toLin'_one]
     rfl
   rw [hy', h1H]
   calc
@@ -763,13 +804,13 @@ theorem MainConcrete
   have := MainAbstract R hR V τ' hτ' x' hx' y' heq'
   rcases this with ⟨r, hr⟩
   have : x = (toMatrix' (conj decomp.symm x')) := by
-    simp [conj_cancel]
+    simp only [ι_apply, conj_cancel, toMatrix'_toLin']
   use r
   rw [this, hr]
   have : (conj decomp.symm : Module.End R ((Fin n → R) × R) ≃ₗ[R] Module.End R (Fin (n+1) → R))
     = (algConj decomp.symm).toLinearEquiv := rfl
   rw [this]
-  simp
+  simp only [SMulHomClass.map_smul, AlgEquiv.toLinearEquiv_apply, _root_.map_one, toMatrix'_one]
 
 /-
 
@@ -789,6 +830,7 @@ theorem MainConcrete'
     (h : ⁅x, ⁅matrixIncl (1 : Mat ℂ n), τ⁆⁆ = ⁅matrixIncl y, τ⁆)
     : ∃ (r : ℂ), x = r • (1 : Mat ℂ (n+1)) := by
   have hR : IsUnit (2 : ℂ) := by
-    have : (2 : ℂ) * (1/2 : ℂ) = 1 := by simp
+    have : (2 : ℂ) * (1/2 : ℂ) = 1 := by simp only [one_div, ne_eq, OfNat.ofNat_ne_zero,
+      not_false_eq_true, mul_inv_cancel]
     exact isUnit_of_mul_eq_one (2 : ℂ) (1/2 : ℂ) this
   exact MainConcrete n ℂ hR τ hτ x hx y h

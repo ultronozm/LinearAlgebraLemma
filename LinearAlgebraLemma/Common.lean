@@ -20,7 +20,8 @@ theorem toMatrix_conj
     := by
   ext i j
   rw [toMatrix_apply, toMatrix_apply]
-  simp
+  simp only [Basis.map_repr, Basis.map_apply, coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+    LinearEquiv.symm_apply_apply, LinearEquiv.trans_apply]
 
 open LinearMap LinearEquiv in
 theorem charpoly_eq_conj_charpoly

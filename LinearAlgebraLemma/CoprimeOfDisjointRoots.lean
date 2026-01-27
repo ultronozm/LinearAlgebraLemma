@@ -44,8 +44,9 @@ theorem polynomial_eval_eq_mvpolynomial_punit_eval
   intro f
   induction' p using Polynomial.induction_on' with p q hp hq n a
   · rw [aeval_add, ← hp, ← hq]
-    simp
-  simp
+    simp only [map_add, MvPolynomial.pUnitAlgEquiv_symm_apply]
+  simp only [MvPolynomial.pUnitAlgEquiv_symm_apply, eval₂_monomial, map_mul, MvPolynomial.eval_C,
+    map_pow, MvPolynomial.eval_X, aeval_monomial, Algebra.id.map_eq_id, RingHom.id_apply]
 
 open Polynomial in
 theorem maximal_ideal_vanishes_at_point
@@ -105,7 +106,7 @@ theorem coprime_of_disjoint_roots
   rcases in_maximal_ideal_of_not_coprime R h' with ⟨m, hm, hp', hq'⟩
   rcases maximal_ideal_vanishes_at_point R m hm with ⟨c, hc⟩
   have h'' : c ∈ p.roots ⊓ q.roots := by
-    simp
+    simp only [Multiset.inf_eq_inter, Multiset.mem_inter, mem_roots', ne_eq, IsRoot.def]
     constructor
     · exact ⟨hp, hc p hp'⟩
     exact ⟨hq, hc q hq'⟩

@@ -42,12 +42,16 @@ theorem one_H_eq_one_sub_ee'
     let ee' : End R (V × R) := (toSpanSingleton R (V × R) e).comp e'
     (upperLeftIncl R V R) 1 = 1 - ee'
     := by
-  simp [upperLeftIncl]
+  simp only [upperLeftIncl, coe_comp, Function.comp_apply, compRight_apply]
   ext v
-  · simp
-  · simp
-  · simp
-  · simp
+  · simp only [coe_comp, coe_inl, Function.comp_apply, lcomp_apply, fst_apply, one_apply,
+    sub_apply, snd_apply, map_zero, sub_zero]
+  · simp only [coe_comp, coe_inl, Function.comp_apply, lcomp_apply, fst_apply, one_apply,
+    sub_apply, snd_apply, map_zero, sub_zero]
+  · simp only [coe_comp, coe_inr, Function.comp_apply, lcomp_apply, fst_apply, map_zero,
+    Prod.fst_zero, sub_apply, one_apply, snd_apply, toSpanSingleton_apply, one_smul, sub_self]
+  · simp only [coe_comp, coe_inr, Function.comp_apply, lcomp_apply, fst_apply, map_zero,
+    Prod.snd_zero, sub_apply, one_apply, snd_apply, toSpanSingleton_apply, one_smul, sub_self]
 
 /-
 
@@ -75,7 +79,7 @@ theorem comm_one_H
     have : ⁅x, (1 : End R (V × R))⁆ = 0 := by
       exact Commute.lie_eq rfl
     rw [this]
-  _ = - ⁅x, ee'⁆ := by simp
+  _ = - ⁅x, ee'⁆ := by simp only [zero_sub, lie_skew]
   _ = - (x * ee' - ee' * x) := by rfl
   _  = ee' * x - x * ee' := neg_sub _ _
 
@@ -96,7 +100,8 @@ theorem aux_commutators
     let e' : Dual R (V × R) := snd R V R
     ⁅x, (upperLeftIncl R V R) 1⁆ e = - (x - (e' (x e)) • 1) e := by
   rw [comm_one_H]
-  simp
+  simp only [sub_apply, mul_apply, coe_comp, Function.comp_apply, snd_apply, toSpanSingleton_apply,
+    Prod.smul_mk, smul_zero, smul_eq_mul, mul_one, one_smul, smul_apply, one_apply, neg_sub]
 
 /-
 
@@ -116,8 +121,12 @@ theorem aux_commutators'
     e' ∘ₗ ⁅x, (upperLeftIncl R V R) 1⁆ = e' ∘ₗ (x - (e' (x e)) • (1 : End R (V × R))) := by
   rw [comm_one_H]
   ext v
-  · simp
-  · simp
+  · simp only [coe_comp, coe_inl, Function.comp_apply, sub_apply, mul_apply, snd_apply,
+    toSpanSingleton_apply, Prod.smul_mk, smul_zero, smul_eq_mul, mul_one, map_zero, sub_zero,
+    smul_apply, one_apply, mul_zero, map_sub]
+  · simp only [coe_comp, coe_inr, Function.comp_apply, sub_apply, mul_apply, snd_apply,
+    toSpanSingleton_apply, Prod.smul_mk, smul_zero, smul_eq_mul, mul_one, one_smul, map_sub,
+    sub_self, smul_apply, one_apply]
 
 /-
 
@@ -140,7 +149,7 @@ theorem injective_e_of_coprime_charpoly
     let e : V × R := (0, 1)
     (x e = y e) → x = y := by
   intro e hxy
-  have h := cyclic_e_of_coprime_charpoly R V τ hτ
+  have h := cyclic_e_of_coprime_charpoly_field R V τ hτ
   exact injective_of_cyclic τ e h x hx y hy hxy
 
 /-
@@ -181,12 +190,12 @@ theorem aux_ez_comm_zero
     (c : R)
     : ⁅(- (x - c • 1)), τ⁆ = 0
     := by
-  simp
+  simp only [neg_sub, sub_lie, smul_lie]
   have : ⁅(1 : End R V), τ⁆ = 0 := by
     exact Commute.lie_eq rfl
   rw [this]
   rw [hx]
-  simp
+  simp only [smul_zero, sub_self]
 
 /-
 
@@ -203,11 +212,11 @@ theorem aux_ez_comm_zero'
     : ⁅(x - c • (1 : End R V)), τ⁆ = 0
     := by
   rw [sub_lie, hx]
-  simp
+  simp only [smul_lie, zero_sub, neg_eq_zero]
   have : ⁅(1 : End R V), τ⁆ = 0 := by
     exact Commute.lie_eq rfl
   rw [this]
-  simp
+  simp only [smul_zero]
   
 /-
 
@@ -221,7 +230,7 @@ theorem aux_cancel_two
     (h : (-(x - y) = (x - y)))
     : x = y
     := by
-  simp at h
+  simp only [neg_sub] at h 
   have := sub_eq_sub_iff_add_eq_add.mp (id h.symm)
   rw [(two_smul R x).symm, (two_smul R y).symm] at this
   exact hR.smul_left_cancel.mp this
@@ -253,7 +262,8 @@ theorem aux_main
   let e' : Dual R (V × R) := snd R V R
   have he : t e = ⁅x, (upperLeftIncl R V R) 1⁆ e := by
     rw [hxyt]
-    simp
+    simp only [upperLeftIncl_apply, add_apply, coe_comp, coe_inl, Function.comp_apply, fst_apply,
+      map_zero, self_eq_add_left, Prod.mk_eq_zero, and_self]
   have he2 : ⁅x, (upperLeftIncl R V R) 1⁆ e = - (x - (e' (x e)) • 1) e := aux_commutators R V x
   have he3 : t = -(x - (e' (x e)) • 1) := by
     have recap : t e = - (x - (e' (x e)) • 1) e := by
@@ -263,13 +273,14 @@ theorem aux_main
   have he' : e' ∘ₗ t = e' ∘ₗ ⁅x, (upperLeftIncl R V R) 1⁆ := by
     rw [hxyt]
     have : e' ∘ₗ ((upperLeftIncl R V R) y) = 0 := by
-      simp
+      simp only [upperLeftIncl_apply]
       ext
       rfl
-      simp
+      simp only [coe_comp, coe_inl, coe_inr, Function.comp_apply, fst_apply, map_zero, snd_apply,
+        zero_comp, zero_apply]
     rw [comp_add]
     rw [this]
-    simp
+    simp only [zero_add]
   have he'2 : e' ∘ₗ ⁅x, (upperLeftIncl R V R) 1⁆ = e' ∘ₗ (x - (e' (x e)) • (1 : End R (V × R))) := aux_commutators' R V x
   have he'3 : t = (x - (e' (x e)) • 1) := by
     have recap : e' ∘ₗ t = e' ∘ₗ (x - (e' (x e)) • (1 : End R (V × R))) := by
@@ -299,7 +310,7 @@ theorem aux_jacobi_appl
   rw [lie_lie (L := End R V) (M := End R V) x z τ]
   rw [heq]
   rw [hx]
-  simp
+  simp only [lie_zero, sub_zero, sub_self]
 
 /-
 
@@ -325,7 +336,7 @@ theorem MainAbstract
     := by
   let t : End R (V × R) := ⁅x, upperLeftIncl R V R 1⁆ - (upperLeftIncl R V R y)
   have hxyt : ⁅x, upperLeftIncl R V R 1⁆ = (upperLeftIncl R V R y) + t := by
-    simp
+    simp only [upperLeftIncl_apply]
     exact eq_add_of_sub_eq' (G := End R (V × R)) rfl
   have ht : ⁅t, τ⁆ = 0 := by
     unfold_let t
