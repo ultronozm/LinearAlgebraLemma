@@ -378,44 +378,32 @@ instance
     sorry
 
 
-open Module in
 theorem aux_isom_thms
   (R : Type) [CommRing R]
   (V : Type) [AddCommGroup V] [Module R V]
   (W : Submodule R V)
   (P : Ideal R)
   :
-  let M := V ⧸ W
-  let N : Submodule R M := ⊤
-  (⊤ : Submodule R V) ≤ W ⊔ (P • (⊤ : Submodule R V)) → N ≤ P • N := by
-  -- intro M N ⟨ hN_ne_bot, hPN_lt_N, hW_ne_top, htop_le_W_join_Ptop ⟩
-  intro M N h
-  set π : V →ₗ[R] M := Submodule.mkQ W
-  intro x _
-  rcases Submodule.mkQ_surjective W x with ⟨ x', hx' ⟩
-  have : x' ∈ (⊤ : Submodule R V) := by
-    simp only [Submodule.mem_top]
-  have := h this
-  have := Submodule.mem_sup.mp this
-  rcases this with ⟨ w, hw, p, hp, hpw ⟩
-  rw [← hx', ← hpw]
-  rw [map_add]
-  have : π w = 0 := by
-    simp only [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
-    exact hw
-  rw [this]
-  clear hpw
-  have hN_all : ∀ y : M, y ∈ N := by
-    unfold_let N
-    simp only [Submodule.mem_top, forall_const]
-  induction' hp using Submodule.smul_induction_on' with p hp v hv v hv v' hv' h₁ h₂
-  · rw [map_smul]
-    simp only [Submodule.mkQ_apply, zero_add]
-    apply Submodule.smul_mem_smul hp _
-    apply hN_all _
-  simp only [top_le_iff, Submodule.mem_top, Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero,
-    forall_const, zero_add, map_add] at *
-  exact Submodule.add_mem _ h₁ h₂
+  (⊤ : Submodule R V) ≤ W ⊔ (P • (⊤ : Submodule R V)) →
+    (⊤ : Submodule R (V ⧸ W)) ≤ (P • (⊤ : Submodule R (V ⧸ W))) := by
+  intro h x hx
+  have hsup : W ⊔ (P • (⊤ : Submodule R V)) = ⊤ := (top_le_iff.mp h)
+  have hmap :
+      Submodule.map (Submodule.mkQ W) (P • (⊤ : Submodule R V)) = ⊤ := by
+    exact (Submodule.map_mkQ_eq_top (p := W) (p' := P • (⊤ : Submodule R V))).2 hsup
+  have hx' : x ∈ Submodule.map (Submodule.mkQ W) (P • (⊤ : Submodule R V)) := by
+    simpa [hmap] using hx
+  have hmap_le : Submodule.map (Submodule.mkQ W) (P • (⊤ : Submodule R V)) ≤
+      (P • (⊤ : Submodule R (V ⧸ W))) := by
+    refine (Submodule.map_le_iff_le_comap).2 ?_
+    refine (Submodule.smul_le).2 ?_
+    intro r hr v hv
+    have hv' : (Submodule.mkQ W) v ∈ (⊤ : Submodule R (V ⧸ W)) := by
+      exact Submodule.mem_top
+    have hmem : r • (Submodule.mkQ W v) ∈ P • (⊤ : Submodule R (V ⧸ W)) :=
+      Submodule.smul_mem_smul hr hv'
+    simpa [map_smul] using hmem
+  exact hmap_le hx'
 
 
 open Polynomial Function in
@@ -426,7 +414,10 @@ theorem mapRingHom_surjective
   (hf : Surjective f)
   : Surjective (mapRingHom f)
   := by
-  sorry
+  intro p
+  rcases Polynomial.map_surjective (f := f) hf p with ⟨q, hq⟩
+  refine ⟨q, ?_⟩
+  simpa [coe_mapRingHom] using hq
 
 
 /-
@@ -441,7 +432,7 @@ set_option maxHeartbeats 1000000
 open Module Polynomial in
 theorem cyclic_e'_of_coprime_charpoly
     (R : Type) [CommRing R] [Nontrivial R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
     (τ : End R (V × R))
     (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
     :
@@ -459,20 +450,20 @@ theorem cyclic_e'_of_coprime_charpoly
   have Mdef : M = ((Dual R (V × R)) ⧸ W) := rfl
   let N : Submodule R M := ⊤
   have hN_ne_bot : N ≠ ⊥ := by
-    have := Submodule.Quotient.nontrivial_of_lt_top W (Ne.lt_top hW_ne_top)
+    letI : Nontrivial M := (Submodule.Quotient.nontrivial_iff (p := W)).2 hW_ne_top
     exact top_ne_bot
-  have hN_fg : Submodule.FG N := Finite.out
+  have hN_fg : Submodule.FG N := by
+    simpa [N] using (Module.Finite.fg_top (R := R) (M := M))
   have : ∃ P : Ideal R, P.IsMaximal ∧ P • N < N :=
     exists_maximal_smul_le_of_ne_bot_of_fg N hN_fg hN_ne_bot
   rcases this with ⟨P, hP, hP'⟩
   absurd hP'
   suffices : N ≤ P • N
-  · exact not_lt_of_le this
+  · exact not_lt_of_ge this
   set X := (⊤ : Submodule R (Dual R (V × R)))
   suffices : X ≤ W ⊔ (P • X)
-  · have blah := aux_isom_thms R (Dual R (V × R)) X P
-    have blah' : ⊤ ≤ X ⊔ P • ⊤ := by sorry
-    have := blah blah'
+  · have blah' : ⊤ ≤ X ⊔ P • ⊤ := by sorry
+    have := aux_isom_thms R (Dual R (V × R)) X P blah'
     have Ndef : N = ⊤ := by sorry
     rw [Ndef]
     sorry
@@ -509,7 +500,7 @@ theorem cyclic_e'_of_coprime_charpoly
     sorry
   let x_mod_P : X_mod_P := by
     use πX x
-    simp
+    exact Submodule.mem_top
   rcases field_case x_mod_P with ⟨ p_mod_P, hp_mod_P ⟩
   rcases mapRingHom_surjective R R_mod_P π (Ideal.Quotient.mkₐ_surjective R P) p_mod_P with ⟨ p, hp ⟩
   use p
@@ -520,7 +511,6 @@ theorem cyclic_e'_of_coprime_charpoly
   set y := (EvalMap (LinearMap.dualMap τ) e') p - x
   show y ∈ P • X
   have this : πX y = 0 := by
-    simp
     sorry
   exact kernel_eval y this
 
