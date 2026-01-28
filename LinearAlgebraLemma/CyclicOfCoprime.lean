@@ -32,10 +32,7 @@ theorem upper_left_action
     (x : Module.End R (V₁ × V₂))
     (v₁ : V₁)
     : (x (v₁, 0)).1 = (upperLeftProj R V₁ V₂ x) v₁
-    := by
-  unfold upperLeftProj
-  simp only [LinearMap.coe_comp, Function.comp_apply, LinearMap.compRight_apply,
-    LinearMap.lcomp_apply, LinearMap.coe_inl, LinearMap.fst_apply]
+    := rfl
 
 /-
 
@@ -105,7 +102,7 @@ theorem polynomial_of_stabilizing_element_stabilizes
     simp only [map_add, LinearMap.add_apply]
     exact Submodule.add_mem U (hp v hv) (hq v hv)
   induction' n with n hn
-  · simp only [Nat.zero_eq, monomial_zero_left, aeval_C, Module.algebraMap_end_apply]
+  · simp only [monomial_zero_left, aeval_C, Module.algebraMap_end_apply]
     exact fun v a_1 => Submodule.smul_mem U a a_1
   intro v hv
   rw [monomial_induction_helper a n τ v]
@@ -140,7 +137,7 @@ theorem apply_polynomials_upper_left
   induction' f using Polynomial.induction_on' with p q hp hq f_n f_a
   · simp only [map_add, LinearMap.add_apply, hp, upperLeftProj_apply, hq, Prod.mk_add_mk, add_zero]
   · induction' f_n with f_n hf_n
-    · simp only [Nat.zero_eq, monomial_zero_left, aeval_C, Module.algebraMap_end_apply,
+    · simp only [monomial_zero_left, aeval_C, Module.algebraMap_end_apply,
       Prod.smul_mk, smul_zero, upperLeftProj_apply]
     calc
     _ = τ (((aeval (R := R) τ) ((monomial f_n) f_a)) (v, 0))
@@ -177,10 +174,10 @@ theorem no_invariant_subspaces_of_coprime_charpoly
   have CH : (aeval (R := R) τ) τ.charpoly = 0 := LinearMap.aeval_self_charpoly τ
   rw [Submodule.eq_bot_iff]
   intro u hu
-  have h : u = ((aeval (R := R) τ) (1 : R[X])) u := by simp only [map_one, LinearMap.one_apply]
+  have h : u = ((aeval (R := R) τ) (1 : R[X])) u := by simp only [map_one, Module.End.one_apply]
   rw [← hxy] at h
   rw [map_add, map_mul, CH] at h
-  simp only [mul_zero, upperLeftProj_apply, map_mul, zero_add, LinearMap.mul_apply] at h 
+  simp only [mul_zero, upperLeftProj_apply, map_mul, zero_add, Module.End.mul_apply] at h 
   have ez1 : u ∈ Submodule.fst R V R := hU hu
   have ez2 : u = (u.1, u.2) := by simp only [Prod.mk.eta]
   have ez3 : u = (u.1, 0) := by
@@ -198,13 +195,14 @@ theorem no_invariant_subspaces_of_coprime_charpoly
     exact apply_polynomials_upper_left R V R U hU τ hτU pH u.1 ez4
   have CH2 : ((aeval (R := R) τH) pH) = 0 := LinearMap.aeval_self_charpoly τH
   rw [CH2] at key1
-  simp only [upperLeftProj_apply, LinearMap.zero_apply] at key1 
-  rw [key1] at h
-  have : ((0 : V), (0 : R)) = (0 : V × R) := by
-    simp only [Prod.mk_eq_zero, and_self]
-  rw [this] at h
-  simp only [map_zero] at h 
-  exact h
+  simp only [LinearMap.zero_apply] at key1
+  have h' : u = ((aeval (R := R) τ) y) (((aeval (R := R) τ) pH) u) := by
+    simpa [pH, upperLeftProj_apply] using h
+  rw [key1] at h'
+  have h'' : u = ((aeval (R := R) τ) y) (0 : V × R) := by
+    simpa [Prod.zero_eq_mk] using h'
+  rw [map_zero] at h''
+  exact h''
 
 /-
 
@@ -224,13 +222,10 @@ theorem dual_evalmap_stable_range
     := by
   intro W w hw
   rcases hw with ⟨ p, hp ⟩
-  simp only [LinearMap.mem_range, EvalMap_apply]
+  rw [LinearMap.mem_range]
   use (X*p : R[X])
-  rw [← hp]
-  simp only [map_mul, aeval_X, LinearMap.mul_apply, EvalMap, AlgHom.toNonUnitalAlgHom_eq_coe,
-    NonUnitalAlgHom.toDistribMulActionHom_eq_coe, LinearMap.coe_smulRight,
-    DistribMulActionHom.coe_toLinearMap, NonUnitalAlgHom.coe_to_distribMulActionHom,
-    NonUnitalAlgHom.coe_coe, LinearMap.smul_def]
+  rw [EvalMap_apply, ← hp]
+  simp only [map_mul, aeval_X, Module.End.mul_apply, EvalMap_apply]
 
 /-
 
@@ -288,12 +283,14 @@ theorem cyclic_e'_of_coprime_charpoly_field
     exact Submodule.dualAnnihilator_bot
   have hU : U ≤ Submodule.fst R V R := by
     intro u hu
-    simp only [Submodule.dualCoannihilator, Submodule.mem_comap, Submodule.mem_dualAnnihilator,
-      LinearMap.mem_range, EvalMap_apply, Module.Dual.eval_apply, forall_exists_index,
-      forall_apply_eq_imp_iff] at hu 
-    replace hu := hu (1 : Polynomial R)
-    simp only [map_one, LinearMap.one_apply, LinearMap.snd_apply] at hu 
-    exact hu
+    have hu' : ∀ φ ∈ W, (φ u : R) = 0 :=
+      (Submodule.mem_dualCoannihilator (Φ := W) (x := u)).1 hu
+    have hu'' : (EvalMap τ.dualMap e' (1 : Polynomial R)) u = 0 := by
+      apply hu'
+      exact ⟨1, rfl⟩
+    have : u.2 = 0 := by
+      simpa [EvalMap_apply, map_one, Module.End.one_apply, LinearMap.snd_apply] using hu''
+    simp [Submodule.fst, LinearMap.snd_apply, this]
   have hτW : ∀ w ∈ W, τ.dualMap w ∈ W := dual_evalmap_stable_range τ e'
   have hτU : ∀ u ∈ U, τ u ∈ U := stable_coannihilator_of_stable_module R τ hτW
   exact no_invariant_subspaces_of_coprime_charpoly R V τ hτ U hU hτU
@@ -328,28 +325,29 @@ much more simply.  Alas.
 open Module LinearMap LinearEquiv in
 noncomputable def κ
     (R : Type) [Field R]
-    (V : Type) [AddCommGroup V] [Module R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Finite R V]
     : (V × R) ≃ₗ[R] (Dual R ((Dual R V) × R))
     := -- (V × R) → (V × R)'' → (V' × R')' → (V' × R)'
   evalEquiv R (V × R) 
   ≪≫ₗ (dualMap $ coprodEquiv R)
-  ≪≫ₗ (dualMap $ (refl R $ Dual R V).prod (symm $ ringLmapEquivSelf R R R))
+  ≪≫ₗ (dualMap $ (refl R $ Dual R V).prodCongr (LinearEquiv.symm $ ringLmapEquivSelf R R R))
 
 open Module LinearMap in
 theorem κ_e
     (R : Type) [Field R]
-    (V : Type) [AddCommGroup V] [Module R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Finite R V]
     : κ R V (0,1) = snd R (Dual R V) R
     := by
   unfold κ
   ext v
   simp only [LinearEquiv.trans_apply, evalEquiv_apply, coe_comp, coe_inl, Function.comp_apply,
-    LinearEquiv.dualMap_apply, LinearEquiv.prod_apply, LinearEquiv.refl_apply, map_zero,
+    LinearEquiv.dualMap_apply, LinearEquiv.prodCongr_apply, LinearEquiv.refl_apply, map_zero,
     coprodEquiv_apply, Dual.eval_apply, coprod_apply, zero_apply, add_zero, snd_comp_inl]
   simp only [LinearEquiv.trans_apply, evalEquiv_apply, coe_comp, coe_inr, Function.comp_apply,
-    LinearEquiv.dualMap_apply, LinearEquiv.prod_apply, map_zero, ringLmapEquivSelf_symm_apply,
-    coprodEquiv_apply, Dual.eval_apply, coprod_apply, coe_smulRight, one_apply, smul_eq_mul,
+    LinearEquiv.dualMap_apply, LinearEquiv.prodCongr_apply, map_zero, ringLmapEquivSelf_symm_apply,
+    coprodEquiv_apply, Dual.eval_apply, coprod_apply, coe_smulRight, smul_eq_mul,
     mul_one, zero_add, snd_comp_inr, id_coe, id_eq]
+  rfl
 
 /-
 
@@ -359,10 +357,10 @@ theorem κ_e
 open Module LinearMap LinearEquiv in
 noncomputable def κ'
     (R : Type) [Field R]
-    (V : Type) [AddCommGroup V] [Module R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Finite R V]
     : (Dual R (V × R)) ≃ₗ[R] ((Dual R V) × R)
     -- (V × R)' → V' × R' → V' × R
-    := (coprodEquiv R).symm ≪≫ₗ (refl R $ Dual R V).prod (ringLmapEquivSelf R R R)
+    := (coprodEquiv R).symm ≪≫ₗ (refl R $ Dual R V).prodCongr (ringLmapEquivSelf R R R)
 
 /-
 
@@ -372,7 +370,7 @@ V' × W' ≃ (V × W)'
 open Module LinearMap LinearEquiv in
 theorem fst_κ'
     {R : Type} [Field R]
-    {V : Type} [AddCommGroup V] [Module R V] [Finite R V]
+    {V : Type} [AddCommGroup V] [Module R V] [Module.Finite R V]
     : (fst R (Dual R V) R) ∘ₗ (κ' R V).toLinearMap
       = (fst R (Dual R V) (Dual R R))
         ∘ₗ ((coprodEquiv R).symm : Dual R (V × R) ≃ₗ[R] (Dual R V) × (Dual R R))
@@ -383,7 +381,7 @@ theorem fst_κ'
 open Module LinearMap in
 theorem fst_κ'_apply
     {R : Type} [Field R]
-    {V : Type} [AddCommGroup V] [Module R V] [Finite R V]
+    {V : Type} [AddCommGroup V] [Module R V] [Module.Finite R V]
     (v : Dual R (V × R))
     : ((κ' R V) v).1 = (((coprodEquiv R).symm : Dual R (V × R) ≃ₗ[R] (Dual R V) × (Dual R R)) v).1
     := by
@@ -393,31 +391,31 @@ theorem fst_κ'_apply
 open Module LinearMap LinearEquiv in
 theorem κ'_symm
     (R : Type) [Field R]
-    (V : Type) [AddCommGroup V] [Module R V] [Finite R V]
-    : (κ' R V).symm = ((refl R $ Dual R V).prod (ringLmapEquivSelf R R R)).symm ≪≫ₗ (coprodEquiv R)
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Finite R V]
+    : (κ' R V).symm = ((refl R $ Dual R V).prodCongr (ringLmapEquivSelf R R R)).symm ≪≫ₗ (coprodEquiv R)
     := by rfl
 
 open Module LinearMap LinearEquiv in
 theorem κ'_symm_apply
     (R : Type) [Field R]
-    (V : Type) [AddCommGroup V] [Module R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Finite R V]
     (v : (Dual R V) × R)
     : (κ' R V).symm v
-      = (coprodEquiv R) (((refl R $ Dual R V).prod (ringLmapEquivSelf R R R)).symm v)
+      = (coprodEquiv R) (((refl R $ Dual R V).prodCongr (ringLmapEquivSelf R R R)).symm v)
     := by rfl
 
 open Module LinearMap LinearEquiv in
 theorem κ'_symm_inl_lem1
     {R : Type} [Field R]
-    {V : Type} [AddCommGroup V] [Module R V] [Finite R V]
+    {V : Type} [AddCommGroup V] [Module R V] [Module.Finite R V]
     (w : Dual R V)
-    : ((refl R $ Dual R V).prod (ringLmapEquivSelf R R R)).symm (w, 0) = (w,0)
-    := (symm_apply_eq ((refl R (Dual R V)).prod (ringLmapEquivSelf R R R))).mpr rfl
+    : ((refl R $ Dual R V).prodCongr (ringLmapEquivSelf R R R)).symm (w, 0) = (w,0)
+    := (symm_apply_eq ((refl R (Dual R V)).prodCongr (ringLmapEquivSelf R R R))).mpr rfl
 
 open Module LinearMap LinearEquiv in
 theorem κ'_symm_inl_lem2
     {R : Type} [Field R]
-    {V : Type} [AddCommGroup V] [Module R V] [Finite R V]
+    {V : Type} [AddCommGroup V] [Module R V] [Module.Finite R V]
     (w : Dual R V)
     : (coprodEquiv R) ((w, 0) : (Dual R V) × (Dual R R)) = w ∘ₗ fst R V R
     := by
@@ -427,7 +425,7 @@ theorem κ'_symm_inl_lem2
 open Module LinearMap LinearEquiv in
 theorem κ'_symm_inl
     {R : Type} [Field R]
-    {V : Type} [AddCommGroup V] [Module R V] [Finite R V]
+    {V : Type} [AddCommGroup V] [Module R V] [Module.Finite R V]
     (w : Dual R V)
     : (κ' R V).symm (w, 0) = w ∘ₗ fst R V R := by
   rw [κ'_symm_apply, κ'_symm_inl_lem1, κ'_symm_inl_lem2]
@@ -436,24 +434,19 @@ theorem κ'_symm_inl
 open Module LinearMap LinearEquiv in
 theorem upper_left_conj_κ'
     {R : Type} [Field R]
-    {V : Type} [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
-    (τ : End R (V × R)) 
+    {V : Type} [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
+    (τ : End R (V × R))
     :
     let V' := Dual R V
     (upperLeftProj R V' R ((conj (κ' R V)) τ.dualMap)) = (upperLeftProj R V R τ).dualMap := by
-  unfold upperLeftProj
   ext w v
-  simp only [conj, coe_comp, Function.comp_apply, compRight_apply, lcomp_apply, coe_inl,
-    arrowCongr_apply, fst_apply, LinearMap.dualMap_apply]
-  rw [κ'_symm_inl w]
-  rw [fst_κ'_apply]
-  simp only [coprodEquiv_symm_apply, coe_comp, coe_inl, Function.comp_apply,
-    LinearMap.dualMap_apply, fst_apply]
+  simp [upperLeftProj_apply, conj_apply, κ'_symm_inl, fst_κ'_apply, coprodEquiv_symm_apply,
+    coe_comp, Function.comp_apply, LinearMap.dualMap_apply, coe_inl]
 
 open Module LinearMap LinearEquiv in
 theorem dual_dual
     (R : Type) [Field R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
     (x : End R V)
     :
     x.dualMap.dualMap = (evalEquiv R V) ∘ₗ x ∘ₗ ((evalEquiv R V).symm : Dual R (Dual R V) ≃ₗ[R] V)
@@ -469,7 +462,7 @@ theorem dual_dual
 open Module in
 theorem relate_κ_κ'
     (R : Type) [Field R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
     (τ : End R (V × R)) 
     : ((κ' R V) ∘ₗ τ.dualMap ∘ₗ (κ' R V).symm).dualMap
     = (κ R V).toLinearMap ∘ₗ τ ∘ₗ (κ R V).symm.toLinearMap
@@ -486,22 +479,6 @@ theorem relate_κ_κ'
   _ = (κ R V).toLinearMap ∘ₗ τ ∘ₗ (κ R V).symm.toLinearMap := by rfl
 
 open Matrix in
-theorem charmatrix_transpose
-    {R : Type} [CommRing R]
-    {I : Type} [Fintype I] [DecidableEq I]
-    (A : Matrix I I R)
-    : charmatrix (Aᵀ) = (charmatrix A)ᵀ
-    := by
-  ext i j n
-  simp only [charmatrix, scalar_apply, RingHom.mapMatrix_apply, sub_apply, map_apply,
-    transpose_apply, Polynomial.coeff_sub, sub_left_inj]
-  simp only [diagonal, of_apply]
-  by_cases h : i = j
-  · simp only [h, ite_true]
-  have h' : j ≠ i := Ne.symm h
-  simp only [h, ite_false, Polynomial.coeff_zero, h']
-
-open Matrix in
 theorem charpoly_transpose
     (R : Type) [CommRing R]
     (I : Type) [Fintype I] [DecidableEq I]
@@ -509,23 +486,25 @@ theorem charpoly_transpose
     : A.charpoly = (Aᵀ).charpoly
     := by
   unfold Matrix.charpoly
-  rw [charmatrix_transpose, det_transpose]
+  rw [Matrix.charmatrix_transpose, det_transpose]
 
 open LinearMap Module in
 theorem charpoly_dualmap_eq_charpoly
     {R : Type} [Field R]
-    {V : Type} [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    {V : Type} [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
     (τ : End R V) 
     : τ.dualMap.charpoly = τ.charpoly
     := by
   let b := Module.Free.chooseBasis R V
   rw [← charpoly_toMatrix τ b]
-  let b' := Basis.dualBasis b
+  let b' := b.dualBasis
   rw [← charpoly_toMatrix τ.dualMap b']
-  nth_rw 1 [charpoly_transpose]
-  apply congrArg Matrix.charpoly
-  ext i j
-  simp only [dualMap, toMatrix_transpose, Matrix.transpose_apply]
+  have hmat :
+      LinearMap.toMatrix b' b' τ.dualMap = Matrix.transpose (LinearMap.toMatrix b b τ) := by
+    simp [b', LinearMap.dualMap_def]
+  rw [hmat]
+  exact (charpoly_transpose (R := R) (I := Free.ChooseBasisIndex R V)
+    (A := LinearMap.toMatrix b b τ)).symm
 
 /-
 
@@ -536,7 +515,7 @@ characteristic polynomials is invariant under conjugation by κ.
 open Module LinearEquiv in
 theorem upper_left_coprimality_dual
     (R : Type) [Field R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
     (τ : End R (V × R)) 
     (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
     :
@@ -557,7 +536,7 @@ theorem upper_left_coprimality_dual
 open Module LinearEquiv in
 theorem madness1
     (R : Type) [Field R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
     (τ : End R (V × R)) 
     :
     (κ R V).toLinearMap ∘ₗ τ = ((κ R V).toLinearMap ∘ₗ τ ∘ₗ (κ R V).symm.toLinearMap) ∘ₗ (κ R V)
@@ -572,7 +551,7 @@ theorem madness1
 open Module in
 theorem madness2
     (R : Type) [Field R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
     (τ : End R (V × R)) 
     :
     let τ' := ((κ' R V).toLinearMap ∘ₗ τ.dualMap ∘ₗ (κ' R V).symm.toLinearMap)
@@ -584,7 +563,7 @@ theorem madness2
 open LinearMap LinearEquiv Module Polynomial in
 theorem necessary_equivariance
     (R : Type) [Field R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
     (τ : End R (V × R)) 
     :
     let τ' := ((κ' R V).toLinearMap ∘ₗ τ.dualMap ∘ₗ (κ' R V).symm.toLinearMap)
@@ -596,8 +575,7 @@ theorem necessary_equivariance
   · rw [aeval_add τ, aeval_add _, comp_add, add_comp _ _ _, hp, hq]
   induction' n with n hn
   · refine LinearMap.ext fun v => ?_
-    simp only [Nat.zero_eq, monomial_zero_left, aeval_C, coe_comp, coe_coe, Function.comp_apply,
-      algebraMap_end_apply, SMulHomClass.map_smul]
+    simp [monomial_zero_left, aeval_C, coe_comp, Function.comp_apply, algebraMap_end_apply]
   rw [(monomial_mul_X n c).symm, aeval_mul, aeval_X, aeval_mul, aeval_X]
   have : (κ R V) ∘ₗ τ = τ'.dualMap ∘ₗ (κ R V) := madness2 R V τ
   calc
@@ -611,7 +589,7 @@ theorem necessary_equivariance
 open LinearMap LinearEquiv Module Polynomial in
 theorem necessary_equivariance'
     (R : Type) [Field R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
     (τ : End R (V × R))
     (v : V × R)
     :
@@ -642,7 +620,7 @@ column-vector (0,1)^t is τ-cyclic.
 open LinearMap LinearEquiv Module Polynomial LinearMap in
 theorem cyclic_e_of_coprime_charpoly_field
     (R : Type) [Field R] -- [CommRing R] [Nontrivial R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
     (τ : End R (V × R)) 
     (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
     :
@@ -668,11 +646,11 @@ theorem cyclic_e_of_coprime_charpoly_field
   rw [eq_top_iff]
   intro w _
   set w' : Dual R (V' × R) := (κ R V) w with hw'
-  have := cyclic_e'_of_coprime_charpoly R V' τ' hτ'
+  have := cyclic_e'_of_coprime_charpoly_field R V' τ' hτ'
   have := this w'
   rcases this with ⟨ p, hp ⟩
   have := equiv p
   rw [hp, hw'] at this
   simp only [symm_apply_apply, EvalMap_apply] at this 
   rw [this]
-  simp only [mem_range, EvalMap_apply, exists_apply_eq_apply]
+  exact ⟨p, rfl⟩
