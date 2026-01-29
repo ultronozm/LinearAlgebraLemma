@@ -1,4 +1,5 @@
-import Mathlib
+import Mathlib.LinearAlgebra.Prod
+import Mathlib.Algebra.Polynomial.AlgebraMap
 
 /-!
 
@@ -74,4 +75,3 @@ def Cyclic
     (τ : Module.End R V)
     (v : V) 
     : Prop := Function.Surjective (EvalMap τ v)
-

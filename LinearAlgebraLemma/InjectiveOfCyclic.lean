@@ -1,4 +1,17 @@
-import Mathlib
+import Mathlib.Algebra.Polynomial.AlgebraMap
+import Mathlib.Algebra.Algebra.Subalgebra.Basic
+import Mathlib.Algebra.Algebra.Subalgebra.Centralizer
+import Mathlib.Algebra.Lie.Basic
+import Mathlib.Algebra.Module.LinearMap.Basic
+import Mathlib.Algebra.Module.LinearMap.End
+import Mathlib.LinearAlgebra.Prod
+import Mathlib.LinearAlgebra.Dual.Defs
+import Mathlib.LinearAlgebra.Dual.Lemmas
+import Mathlib.LinearAlgebra.Dual.Basis
+import Mathlib.LinearAlgebra.Basis.Defs
+import Mathlib.LinearAlgebra.FreeModule.Basic
+import Mathlib.LinearAlgebra.Matrix.ToLin
+import Mathlib.Data.Matrix.Basic
 import LinearAlgebraLemma.Defs
 
 /-!

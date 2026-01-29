@@ -1,4 +1,7 @@
-import Mathlib
+import Mathlib.LinearAlgebra.Matrix.ToLin
+import Mathlib.LinearAlgebra.Charpoly.ToMatrix
+import Mathlib.LinearAlgebra.FreeModule.Basic
+import Mathlib.LinearAlgebra.Basis.Defs
 
 /-!
 
