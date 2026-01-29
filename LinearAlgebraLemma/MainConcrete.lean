@@ -414,27 +414,7 @@ theorem lie_map_of_ring_hom'
   rw [Ring.lie_def, Ring.lie_def] at *
   rw [←f.map_mul, ←f.map_mul, ←f.map_sub]
 
-/-
-
-Characteristic polynomials of matrices over an algebraically closed
-field are coprime provided that they have no common roots.
-
--/
-open Polynomial in
-theorem aux_char_poly_coprime_of_roots_disjoint
-    (R : Type) [Field R] [IsAlgClosed R] [DecidableEq R]
-    {m n : ℕ}
-    (x : Mat R m)
-    (y : Mat R n)
-    (h : x.charpoly.roots ⊓ y.charpoly.roots = ⊥)
-    : IsCoprime x.charpoly y.charpoly := by
-  set px := x.charpoly
-  set py := y.charpoly
-  have hpx : Monic px := Matrix.charpoly_monic x
-  have hpy : Monic py := Matrix.charpoly_monic y
-  have hpx2 : px ≠ 0 := Monic.ne_zero hpx
-  have hpy2 : py ≠ 0 := Monic.ne_zero hpy
-  exact coprime_of_disjoint_roots R hpx2 hpy2 h
+-- (roots-based coprimality lemma removed; we now assume IsCoprime directly)
 
 theorem castAdd_one_ne_last (n : ℕ) (i : Fin n) : ¬Fin.castAdd 1 i = Fin.last n := by
   have : Fin.castAdd 1 i = Fin.castSucc i := rfl
@@ -761,9 +741,9 @@ where 2 is a unit.
 open LinearEquiv LinearMap Matrix in
 theorem MainConcrete
     (n : ℕ)
-    (R : Type) [Field R] [IsAlgClosed R] [DecidableEq R]
+    (R : Type) [Field R] [DecidableEq R]
     (hR : IsUnit (2:R))
-    (τ : Mat R (n+1)) (hτ : τ.charpoly.roots ⊓ (Matrix.subUpLeft τ).charpoly.roots = ⊥)
+    (τ : Mat R (n+1)) (hτ : IsCoprime τ.charpoly (Matrix.subUpLeft τ).charpoly)
     (x : Mat R (n+1)) (hx : ⁅x, τ⁆ = 0)
     (y : Mat R n)
     (heq : ⁅x, ⁅matrixIncl (1 : Mat R n), τ⁆⁆ = ⁅matrixIncl y, τ⁆)
@@ -772,8 +752,7 @@ theorem MainConcrete
   set V := (Fin n) → R
   let τ' : Module.End R (V × R) := ι τ
   set τ'H := (upperLeftProj R V R τ')
-  have hτ' : IsCoprime τ.charpoly (Matrix.subUpLeft τ).charpoly :=
-    aux_char_poly_coprime_of_roots_disjoint R τ (Matrix.subUpLeft τ) hτ
+  have hτ' : IsCoprime τ.charpoly (Matrix.subUpLeft τ).charpoly := hτ
   have : τ.charpoly = τ'.charpoly := charpoly_eq_conj_decomp_toLin_charpoly τ
   rw [this] at hτ'
   have : (Matrix.subUpLeft τ).charpoly = τ'H.charpoly := by
@@ -846,7 +825,7 @@ then x is a scalar.  Stated in the language of matrices over ℂ.
 -/
 theorem MainConcrete'
     (n : ℕ)
-    (τ : Mat ℂ (n+1)) (hτ : τ.charpoly.roots ⊓ (Matrix.subUpLeft τ).charpoly.roots = ⊥)
+    (τ : Mat ℂ (n+1)) (hτ : IsCoprime τ.charpoly (Matrix.subUpLeft τ).charpoly)
     (x : Mat ℂ (n+1)) (hx : ⁅x, τ⁆ = 0) (y : Mat ℂ n)
     (h : ⁅x, ⁅matrixIncl (1 : Mat ℂ n), τ⁆⁆ = ⁅matrixIncl y, τ⁆)
     : ∃ (r : ℂ), x = r • (1 : Mat ℂ (n+1)) := by
