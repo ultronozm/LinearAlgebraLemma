@@ -23,6 +23,7 @@ Use this when working on Lean4/mathlib proofs in any repo.
 - Keep the main file compiling; avoid large refactors until proof is stable.
 - Use `#check`, `#synth`, `#print`, `#reduce` to inspect goals/types.
 - If proofs are slow, isolate them into smaller lemmas and simplify the statement.
+- When shrinking imports, avoid `Mathlib.Tactic` by rewriting tactic-only steps (e.g. use `Polynomial.induction_on'` directly instead of `induction'`).
 - Keep this skill doc updated with concise workflow gems discovered during the task.
 - When stuck: strip complexity to the smallest failing example, then rebuild from simpler working cases. If still unsolved, report both the minimal failing example and the closest working example side-by-side.
 
