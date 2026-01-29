@@ -1,4 +1,13 @@
-import Mathlib
+import Mathlib.Algebra.Polynomial.BigOperators
+import Mathlib.Algebra.Polynomial.AlgebraMap
+import Mathlib.Algebra.Polynomial.RingDivision
+import Mathlib.FieldTheory.AlgebraicClosure
+import Mathlib.Algebra.MvPolynomial.Equiv
+import Mathlib.Algebra.MvPolynomial.Eval
+import Mathlib.RingTheory.Ideal.Operations
+import Mathlib.RingTheory.Ideal.Quotient.Basic
+import Mathlib.RingTheory.Ideal.Basic
+import Mathlib.RingTheory.Nullstellensatz
 
 /-!
 
@@ -40,14 +49,16 @@ theorem polynomial_eval_eq_mvpolynomial_punit_eval
     (MvPolynomial.eval c) (f p) = (Polynomial.aeval (R := R) (c ())) p
     := by
   intro f
-  induction' p using Polynomial.induction_on' with p q hp hq n a
-  · rw [aeval_add, ← hp, ← hq]
+  refine Polynomial.induction_on' p ?add ?monom
+  · intro p q hp hq
+    rw [aeval_add, ← hp, ← hq]
     simp only [map_add]
-  rw [MvPolynomial.pUnitAlgEquiv_symm_apply]
-  rw [eval₂_monomial]
-  rw [aeval_monomial]
-  simp only [Algebra.algebraMap_self, RingHom.id_apply]
-  simp only [map_mul, map_pow, MvPolynomial.eval_C, MvPolynomial.eval_X]
+  · intro n a
+    rw [MvPolynomial.pUnitAlgEquiv_symm_apply]
+    rw [eval₂_monomial]
+    rw [aeval_monomial]
+    simp only [Algebra.algebraMap_self, RingHom.id_apply]
+    simp only [map_mul, map_pow, MvPolynomial.eval_C, MvPolynomial.eval_X]
 
 open Polynomial in
 theorem maximal_ideal_vanishes_at_point
