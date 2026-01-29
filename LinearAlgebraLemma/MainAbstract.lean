@@ -1,4 +1,3 @@
-import Mathlib
 import LinearAlgebraLemma.Defs
 import LinearAlgebraLemma.InjectiveOfCyclic
 import LinearAlgebraLemma.CyclicOfCoprime
