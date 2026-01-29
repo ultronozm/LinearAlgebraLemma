@@ -35,23 +35,14 @@ In the code that follows, we use the notation
 open LinearMap Module in
 theorem one_H_eq_one_sub_ee'
     (R : Type) [CommRing R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     :
-    let e : V × R := (0, 1)
-    let e' : Dual R (V × R) := snd R V R
-    let ee' : End R (V × R) := (toSpanSingleton R (V × R) e).comp e'
-    (upperLeftIncl R V R) 1 = 1 - ee'
+  let e : V × R := (0, 1)
+  let e' : Dual R (V × R) := snd R V R
+  let ee' : End R (V × R) := (toSpanSingleton R (V × R) e).comp e'
+  (upperLeftIncl R V R) 1 = 1 - ee'
     := by
-  simp only [upperLeftIncl, coe_comp, Function.comp_apply, compRight_apply]
-  ext v
-  · simp only [coe_comp, coe_inl, Function.comp_apply, lcomp_apply, fst_apply, one_apply,
-    sub_apply, snd_apply, map_zero, sub_zero]
-  · simp only [coe_comp, coe_inl, Function.comp_apply, lcomp_apply, fst_apply, one_apply,
-    sub_apply, snd_apply, map_zero, sub_zero]
-  · simp only [coe_comp, coe_inr, Function.comp_apply, lcomp_apply, fst_apply, map_zero,
-    Prod.fst_zero, sub_apply, one_apply, snd_apply, toSpanSingleton_apply, one_smul, sub_self]
-  · simp only [coe_comp, coe_inr, Function.comp_apply, lcomp_apply, fst_apply, map_zero,
-    Prod.snd_zero, sub_apply, one_apply, snd_apply, toSpanSingleton_apply, one_smul, sub_self]
+  ext v <;> simp [upperLeftIncl_apply, toSpanSingleton_apply, Module.End.one_apply]
 
 /-
 
@@ -63,7 +54,7 @@ We have
 open LinearMap Module in
 theorem comm_one_H
     (R : Type) [CommRing R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (x : End R (V × R))
     :
     let e : V × R := (0, 1)
@@ -93,15 +84,16 @@ We have
 open LinearMap Module in
 theorem aux_commutators
     (R : Type) [CommRing R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (x : End R (V × R))
     :
     let e : V × R := (0, 1)
     let e' : Dual R (V × R) := snd R V R
     ⁅x, (upperLeftIncl R V R) 1⁆ e = - (x - (e' (x e)) • 1) e := by
   rw [comm_one_H]
-  simp only [sub_apply, mul_apply, coe_comp, Function.comp_apply, snd_apply, toSpanSingleton_apply,
-    Prod.smul_mk, smul_zero, smul_eq_mul, mul_one, one_smul, smul_apply, one_apply, neg_sub]
+  simp only [sub_apply, Module.End.mul_apply, coe_comp, Function.comp_apply, snd_apply,
+    toSpanSingleton_apply, Prod.smul_mk, smul_zero, smul_eq_mul, mul_one, one_smul, smul_apply,
+    Module.End.one_apply, neg_sub]
 
 /-
 
@@ -113,7 +105,7 @@ We have
 open LinearMap Module in
 theorem aux_commutators'
     (R : Type) [CommRing R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (x : End R (V × R))
     :
     let e : V × R := (0, 1)
@@ -121,12 +113,12 @@ theorem aux_commutators'
     e' ∘ₗ ⁅x, (upperLeftIncl R V R) 1⁆ = e' ∘ₗ (x - (e' (x e)) • (1 : End R (V × R))) := by
   rw [comm_one_H]
   ext v
-  · simp only [coe_comp, coe_inl, Function.comp_apply, sub_apply, mul_apply, snd_apply,
+  · simp only [coe_comp, coe_inl, Function.comp_apply, sub_apply, Module.End.mul_apply, snd_apply,
     toSpanSingleton_apply, Prod.smul_mk, smul_zero, smul_eq_mul, mul_one, map_zero, sub_zero,
-    smul_apply, one_apply, mul_zero, map_sub]
-  · simp only [coe_comp, coe_inr, Function.comp_apply, sub_apply, mul_apply, snd_apply,
+    smul_apply, Module.End.one_apply, mul_zero, map_sub]
+  · simp only [coe_comp, coe_inr, Function.comp_apply, sub_apply, Module.End.mul_apply, snd_apply,
     toSpanSingleton_apply, Prod.smul_mk, smul_zero, smul_eq_mul, mul_one, one_smul, map_sub,
-    sub_self, smul_apply, one_apply]
+    sub_self, smul_apply, Module.End.one_apply]
 
 /-
 
@@ -141,7 +133,7 @@ is injective.
 open Module in
 theorem injective_e_of_coprime_charpoly
     (R : Type) [Field R] -- [CommRing R] [Nontrivial R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (τ : End R (V × R)) (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
     (x : End R (V × R)) (hx : ⁅x, τ⁆ = 0)
     (y : End R (V × R)) (hy : ⁅y, τ⁆ = 0)
@@ -165,7 +157,7 @@ is injective.
 open LinearMap Module in
 theorem injective_e'_of_coprime_charpoly
     (R : Type) [Field R] -- [CommRing R] [Nontrivial R]
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (τ : End R (V × R)) (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
     (x : End R (V × R)) (hx : ⁅x, τ⁆ = 0)
     (y : End R (V × R)) (hy : ⁅y, τ⁆ = 0)
@@ -250,7 +242,7 @@ open LinearMap Module in
 theorem aux_main
     (R : Type) [Field R] -- [CommRing R] [Nontrivial R] 
     (hR : IsUnit (2:R))
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (τ : End R (V × R)) (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
     (x : End R (V × R)) (hx : ⁅x, τ⁆ = 0)
     (y : End R V)
@@ -261,9 +253,17 @@ theorem aux_main
   let e : V × R := (0, 1)
   let e' : Dual R (V × R) := snd R V R
   have he : t e = ⁅x, (upperLeftIncl R V R) 1⁆ e := by
-    rw [hxyt]
-    simp only [upperLeftIncl_apply, add_apply, coe_comp, coe_inl, Function.comp_apply, fst_apply,
-      map_zero, self_eq_add_left, Prod.mk_eq_zero, and_self]
+    have hxyt' := congrArg (fun f => f e) hxyt
+    have hye : (upperLeftIncl R V R y) e = 0 := by
+      simp [upperLeftIncl_apply, e]
+    -- hxyt' : ⁅x, upperLeftIncl 1⁆ e = (upperLeftIncl y) e + t e
+    -- so t e = ⁅x, upperLeftIncl 1⁆ e
+    calc
+      t e = (upperLeftIncl R V R y) e + t e := by
+        have h : (upperLeftIncl R V R y) e + t e = 0 + t e := by
+          rw [hye]
+        simpa using h.symm
+      _ = ⁅x, (upperLeftIncl R V R) 1⁆ e := by simpa using hxyt'.symm
   have he2 : ⁅x, (upperLeftIncl R V R) 1⁆ e = - (x - (e' (x e)) • 1) e := aux_commutators R V x
   have he3 : t = -(x - (e' (x e)) • 1) := by
     have recap : t e = - (x - (e' (x e)) • 1) e := by
@@ -273,11 +273,7 @@ theorem aux_main
   have he' : e' ∘ₗ t = e' ∘ₗ ⁅x, (upperLeftIncl R V R) 1⁆ := by
     rw [hxyt]
     have : e' ∘ₗ ((upperLeftIncl R V R) y) = 0 := by
-      simp only [upperLeftIncl_apply]
-      ext
-      rfl
-      simp only [coe_comp, coe_inl, coe_inr, Function.comp_apply, fst_apply, map_zero, snd_apply,
-        zero_comp, zero_apply]
+      ext v <;> simp [upperLeftIncl_apply, e']
     rw [comp_add]
     rw [this]
     simp only [zero_add]
@@ -300,7 +296,7 @@ If [x,τ] = 0 and [x, [z, τ]] = [y, τ], then [[x, z], τ] - [y, τ] = 0.
 open Module in
 theorem aux_jacobi_appl
     {R : Type} [CommRing R] [Nontrivial R]
-    {V : Type} [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    {V : Type} [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (τ : End R V)
     (x : End R V) (hx : ⁅x, τ⁆ = 0)
     (y : End R V)
@@ -327,7 +323,7 @@ open Module in
 theorem MainAbstract
     (R : Type) [Field R] -- [CommRing R] [Nontrivial R]
     (hR : IsUnit (2:R))
-    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Finite R V]
+    (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (τ : End R (V × R)) (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
     (x : End R (V × R)) (hx : ⁅x, τ⁆ = 0)
     (y : End R V)
@@ -339,7 +335,7 @@ theorem MainAbstract
     simp only [upperLeftIncl_apply]
     exact eq_add_of_sub_eq' (G := End R (V × R)) rfl
   have ht : ⁅t, τ⁆ = 0 := by
-    unfold_let t
-    rw [sub_lie (⁅x, (upperLeftIncl R V R) 1⁆) ((upperLeftIncl R V R) y) τ]
+    dsimp [t]
+    rw [sub_lie]
     exact aux_jacobi_appl τ x hx _ _ heq
   exact aux_main R hR V τ hτ x hx y t hxyt ht
