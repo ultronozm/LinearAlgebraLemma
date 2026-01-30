@@ -131,7 +131,7 @@ is injective.
 -/
 open Module in
 theorem injective_e_of_coprime_charpoly
-    (R : Type) [Field R] -- [CommRing R] [Nontrivial R]
+    (R : Type) [CommRing R] [Nontrivial R]
     (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (τ : End R (V × R)) (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
     (x : End R (V × R)) (hx : ⁅x, τ⁆ = 0)
@@ -140,7 +140,7 @@ theorem injective_e_of_coprime_charpoly
     let e : V × R := (0, 1)
     (x e = y e) → x = y := by
   intro e hxy
-  have h := cyclic_e_of_coprime_charpoly_field R V τ hτ
+  have h := cyclic_e_of_coprime_charpoly R V τ hτ
   exact injective_of_cyclic τ e h x hx y hy hxy
 
 /-
@@ -155,7 +155,7 @@ is injective.
 -/
 open LinearMap Module in
 theorem injective_e'_of_coprime_charpoly
-    (R : Type) [Field R] -- [CommRing R] [Nontrivial R]
+    (R : Type) [CommRing R] [Nontrivial R]
     (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (τ : End R (V × R)) (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
     (x : End R (V × R)) (hx : ⁅x, τ⁆ = 0)
@@ -239,7 +239,7 @@ then x is a scalar.  Stated in the language of endomorphisms.
 -/
 open LinearMap Module in
 theorem aux_main
-    (R : Type) [Field R] -- [CommRing R] [Nontrivial R] 
+    (R : Type) [CommRing R] [Nontrivial R]
     (hR : IsUnit (2:R))
     (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (τ : End R (V × R)) (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
@@ -320,7 +320,7 @@ then x is a scalar.  Stated in the language of endomorphisms.
 -/
 open Module in
 theorem MainAbstract
-    (R : Type) [Field R] -- [CommRing R] [Nontrivial R]
+    (R : Type) [CommRing R] [Nontrivial R]
     (hR : IsUnit (2:R))
     (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (τ : End R (V × R)) (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
