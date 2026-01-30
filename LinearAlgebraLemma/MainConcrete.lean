@@ -812,10 +812,16 @@ theorem MainConcrete
   let τ' : Module.End R (V × R) := (ι (R := R) (n := n) τ)
   have hτ' : IsCoprime τ'.charpoly (upperLeftProj R V R τ').charpoly := by
     have hτ0 := coprime_charpoly_transfer (R := R) (n := n) τ hτ
-    rcases hτ0 with ⟨a, b, hab⟩
-    refine ⟨a, b, ?_⟩
-    -- simpa [τ', ι_apply] using hab -- type error
-    sorry
+    have h1 :
+        (conj (decomp (R := R) (n := n)) (toLin' τ)).charpoly =
+          Matrix.charpoly τ := (charpoly_eq_conj_decomp_toLin_charpoly (x := τ)).symm
+    have h1' : τ'.charpoly = Matrix.charpoly τ := by
+      dsimp [τ', ι_apply]
+      exact h1
+    rw [h1']
+    -- unfold upperLeftProj and τ' to match hτ0
+    simp [upperLeftProj, τ', ι_apply] at *
+    exact hτ0
   let x' : Module.End R (V × R) := (ι (R := R) (n := n) x)
   have hx' : ⁅x', τ'⁆ = 0 := by
     apply lie_map_of_ring_hom (B := Module.End R ((Fin n → R) × R)) R (ι_AlgEquiv R n) x τ hx
