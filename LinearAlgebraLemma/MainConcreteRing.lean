@@ -1,13 +1,13 @@
 import LinearAlgebraLemma.MainConcrete
 import LinearAlgebraLemma.MainAbstract
 
-open LinearEquiv LinearMap Matrix
+open LinearEquiv LinearMap Matrix nonZeroDivisors
 
 /-- Ring-level matrix version (coprime charpoly hypothesis). -/
 theorem MainConcreteRing
     (n : ℕ)
     (R : Type) [CommRing R] [Nontrivial R] [DecidableEq R]
-    (hR : IsUnit (2:R))
+    (hR : (2 : R) ∈ R⁰)
     (τ : Mat R (n+1)) (hτ : IsCoprime τ.charpoly (Matrix.subUpLeft τ).charpoly)
     (x : Mat R (n+1)) (hx : ⁅x, τ⁆ = 0)
     (y : Mat R n)

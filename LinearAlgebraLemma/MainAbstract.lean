@@ -1,3 +1,4 @@
+import Mathlib.Algebra.GroupWithZero.NonZeroDivisors
 import LinearAlgebraLemma.Defs
 import LinearAlgebraLemma.InjectiveOfCyclic
 import LinearAlgebraLemma.CyclicOfCoprime
@@ -214,9 +215,19 @@ theorem aux_ez_comm_zero'
 If -(x-y) = (x-y) and 2 is a unit, then x = y.
 
 -/
+example (R : Type) [Ring R] (x y : R)
+    (h : x - y = 0) : x = y := by
+  exact eq_of_sub_eq_zero h
+
+#check eq_of_sub_eq_zero
+
+#check smul_sub
+
+open Module nonZeroDivisors in
 theorem aux_cancel_two
-    (R : Type) [CommRing R] (hR : IsUnit (2:R))
-    (V : Type) [AddCommGroup V] [Module R V]
+    (R : Type) [CommRing R]
+    (hR : (2 : R) ∈ R⁰)
+    (V : Type) [AddCommGroup V] [Module R V] [IsTorsionFree R V]
     (x y : Module.End R V) 
     (h : (-(x - y) = (x - y)))
     : x = y
@@ -224,7 +235,12 @@ theorem aux_cancel_two
   simp only [neg_sub] at h 
   have := sub_eq_sub_iff_add_eq_add.mp (id h.symm)
   rw [(two_smul R x).symm, (two_smul R y).symm] at this
-  exact hR.smul_left_cancel.mp this
+  rw [mem_nonZeroDivisors_iff] at hR
+  apply eq_of_sub_eq_zero
+  replace this := sub_eq_zero_of_eq this
+  rw [← smul_sub 2 x y] at this
+  have hreg : IsRegular (2 : R) := (isRegular_iff_mem_nonZeroDivisors).2 hR
+  exact (hreg.smul_eq_zero_iff_right (m := (x-y))).1 this
 
 /-
 
@@ -237,10 +253,10 @@ have coprime characteristic polynomials, and
 then x is a scalar.  Stated in the language of endomorphisms.
 
 -/
-open LinearMap Module in
+open LinearMap Module nonZeroDivisors in
 theorem aux_main
     (R : Type) [CommRing R] [Nontrivial R]
-    (hR : IsUnit (2:R))
+    (hR : (2 : R) ∈ R⁰)
     (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (τ : End R (V × R)) (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
     (x : End R (V × R)) (hx : ⁅x, τ⁆ = 0)
@@ -318,10 +334,10 @@ have coprime characteristic polynomials, and
 then x is a scalar.  Stated in the language of endomorphisms.
 
 -/
-open Module in
+open Module nonZeroDivisors in
 theorem MainAbstract
     (R : Type) [CommRing R] [Nontrivial R]
-    (hR : IsUnit (2:R))
+    (hR : (2 : R) ∈ R⁰)
     (V : Type) [AddCommGroup V] [Module R V] [Free R V] [Module.Finite R V]
     (τ : End R (V × R)) (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
     (x : End R (V × R)) (hx : ⁅x, τ⁆ = 0)
