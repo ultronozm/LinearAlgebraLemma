@@ -796,11 +796,11 @@ where 2 is a unit.
 
 -/
 -- keep default heartbeats here; ring version lives in MainConcreteRing
-open LinearEquiv LinearMap Matrix
+open LinearEquiv LinearMap Matrix nonZeroDivisors in
 theorem MainConcrete
     (n : ℕ)
     (R : Type) [Field R] [DecidableEq R]
-    (hR : IsUnit (2:R))
+    (hR : (2 : R) ∈ R⁰)
     (τ : Mat R (n+1)) (hτ : IsCoprime τ.charpoly (Matrix.subUpLeft τ).charpoly)
     (x : Mat R (n+1)) (hx : ⁅x, τ⁆ = 0)
     (y : Mat R n)
@@ -848,12 +848,14 @@ have coprime characteristic polynomials, and
 then x is a scalar.  Stated in the language of matrices over ℂ.
 
 -/
+open nonZeroDivisors in
 theorem MainConcrete'
     (n : ℕ)
     (τ : Mat ℂ (n+1)) (hτ : IsCoprime τ.charpoly (Matrix.subUpLeft τ).charpoly)
     (x : Mat ℂ (n+1)) (hx : ⁅x, τ⁆ = 0) (y : Mat ℂ n)
     (h : ⁅x, ⁅matrixIncl (1 : Mat ℂ n), τ⁆⁆ = ⁅matrixIncl y, τ⁆)
     : ∃ (r : ℂ), x = r • (1 : Mat ℂ (n+1)) := by
-  have hR : IsUnit (2 : ℂ) := by
-    exact (isUnit_iff_ne_zero.mpr (two_ne_zero : (2 : ℂ) ≠ 0))
+  have hR : (2 : ℂ) ∈ ℂ⁰ := by
+    have : IsUnit (2 : ℂ) := by exact (isUnit_iff_ne_zero.mpr (two_ne_zero : (2 : ℂ) ≠ 0))
+    exact IsUnit.mem_nonZeroDivisors this
   exact MainConcrete n ℂ hR τ hτ x hx y h
