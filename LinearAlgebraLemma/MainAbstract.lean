@@ -215,14 +215,6 @@ theorem aux_ez_comm_zero'
 If -(x-y) = (x-y) and 2 is a unit, then x = y.
 
 -/
-example (R : Type) [Ring R] (x y : R)
-    (h : x - y = 0) : x = y := by
-  exact eq_of_sub_eq_zero h
-
-#check eq_of_sub_eq_zero
-
-#check smul_sub
-
 open Module nonZeroDivisors in
 theorem aux_cancel_two
     (R : Type) [CommRing R]

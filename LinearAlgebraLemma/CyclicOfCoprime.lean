@@ -984,7 +984,7 @@ theorem cyclic_e'_of_coprime_charpoly
     let eV_S : (R_mod_P ⊗[R] V) ≃ₗ[R_mod_P] V_mod_P :=
       { toLinearMap :=
           { toFun := eV
-            map_add' := by intro x y; simp?
+            map_add' := by intro x y; simp only [map_add]
             map_smul' := by intro a x; exact eV_smul a x }
         invFun := eV.symm
         left_inv := eV.left_inv
@@ -997,7 +997,7 @@ theorem cyclic_e'_of_coprime_charpoly
     let eR_S : (R_mod_P ⊗[R] R) ≃ₗ[R_mod_P] R_mod_P :=
       { toLinearMap :=
           { toFun := eR
-            map_add' := by intro x y; simp?
+            map_add' := by intro x y; simp only [map_add]
             map_smul' := by intro a x; exact eR_smul a x }
         invFun := eR.symm
         left_inv := eR.left_inv

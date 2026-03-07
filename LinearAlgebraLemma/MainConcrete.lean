@@ -1,4 +1,3 @@
-import Mathlib.Algebra.Lie.Basic
 import Mathlib.Algebra.Algebra.Equiv
 import Mathlib.Algebra.Polynomial.AlgebraMap
 import Mathlib.Algebra.Polynomial.RingDivision
