@@ -18,9 +18,7 @@ import Mathlib.LinearAlgebra.Matrix.Charpoly.LinearMap
 import Mathlib.LinearAlgebra.Pi
 import Mathlib.LinearAlgebra.Prod
 import LinearAlgebraLemma.MainAbstract
-import LinearAlgebraLemma.CoprimeOfDisjointRoots
 import LinearAlgebraLemma.Defs
-import LinearAlgebraLemma.Common
 
 /-!
 
@@ -340,7 +338,7 @@ open LinearMap LinearEquiv in
 theorem charpoly_eq_conj_decomp_symm_charpoly {R : Type} [CommRing R] [Nontrivial R] {n : ℕ}
     (y : Module.End R ((Fin n → R) × R))
     : y.charpoly = (conj decomp.symm y).charpoly := by
-  apply charpoly_eq_conj_charpoly decomp.symm y
+  rw [LinearEquiv.charpoly_conj]
 
 open LinearMap LinearEquiv in
 theorem charpoly_eq_toMatrix_conj_decomp_symm_charpoly

@@ -12,8 +12,13 @@ import Mathlib.LinearAlgebra.Dual.Basis
 import Mathlib.LinearAlgebra.Basis.Defs
 import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.LinearAlgebra.Matrix.ToLin
+import Mathlib.LinearAlgebra.Matrix.Dual
 import Mathlib.Data.Matrix.Basic
 import LinearAlgebraLemma.Defs
+
+/- Mathlib no longer registers the commutator-bracket Lie ring structure on
+associative rings as a global instance; restore it locally. -/
+attribute [local instance 100] LieRing.ofAssociativeRing
 
 /-!
 
@@ -191,30 +196,6 @@ theorem aux_lie_zero
   rw [(lie_skew _ _).symm, this]
   simp
 
-section transpose
-
-open Matrix
-
-variable {K V₁ V₂ ι₁ ι₂ : Type*} [CommRing K] [AddCommGroup V₁] [Module K V₁] [AddCommGroup V₂]
-  [Module K V₂] [Fintype ι₁] [Fintype ι₂] [DecidableEq ι₁] [DecidableEq ι₂] {B₁ : Module.Basis ι₁ K V₁}
-  {B₂ : Module.Basis ι₂ K V₂}
-
-/-
-
-Generalized from mathlib's `LinearMap.toMatrix_transpose' by replacing
-"Field" with "CommSemiring".
-
--/
-@[simp]
-theorem LinearMap.toMatrix_transpose' (u : V₁ →ₗ[K] V₂) :
-    LinearMap.toMatrix B₂.dualBasis B₁.dualBasis (Module.Dual.transpose (R := K) u) =
-    (LinearMap.toMatrix B₁ B₂ u)ᵀ := by
-  ext i j
-  simp only [LinearMap.toMatrix_apply, Module.Dual.transpose_apply, B₁.dualBasis_repr,
-    B₂.dualBasis_apply, Matrix.transpose_apply, LinearMap.comp_apply]
-
-end transpose
-
 /-
 
 Duality on finite free modules over a ring is injective.
@@ -232,9 +213,9 @@ theorem transpose_injective
   let B : Module.Basis ι R V := Module.Free.chooseBasis R V
   let B' : Module.Basis ι R (Dual R V) := B.dualBasis
   have ha : (toMatrix B' B' (Dual.transpose a)) = (toMatrix B B a).transpose :=
-    toMatrix_transpose' (K := R) (B₁ := B) (B₂ := B) a
+    toMatrix_transpose (K := R) (B₁ := B) (B₂ := B) a
   have hb : (toMatrix B' B' (Dual.transpose b)) = (toMatrix B B b).transpose :=
-    toMatrix_transpose' (K := R) (B₁ := B) (B₂ := B) b
+    toMatrix_transpose (K := R) (B₁ := B) (B₂ := B) b
   unfold dualMap at h
   rw [h] at ha
   rw [ha] at hb

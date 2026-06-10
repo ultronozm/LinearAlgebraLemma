@@ -29,7 +29,6 @@ import Mathlib.RingTheory.Nakayama
 import Mathlib.RingTheory.TensorProduct.IsBaseChangeHom
 import Mathlib.Tactic
 import LinearAlgebraLemma.Defs
-import LinearAlgebraLemma.Common
 
 open scoped TensorProduct
 
@@ -234,9 +233,9 @@ lemma upperLeftProj_baseChange_add
     simp only [upperLeftProj_apply, LinearMap.coe_comp, LinearMap.coe_fst, LinearMap.coe_inl,
       Function.comp_apply, f]
   have hx' : f x = g x := by
-    simpa [f, g, hleft] using hx
+    simpa [f, g, hleft, τ1, e1] using hx
   have hy' : f y = g y := by
-    simpa [f, g, hleft] using hy
+    simpa [f, g, hleft, τ1, e1] using hy
   calc
     f (x + y) = f x + f y := by simp only [map_add]
     _ = g x + g y := by simp only [hx', hy']
@@ -533,7 +532,7 @@ theorem cyclic_e'_of_coprime_charpoly_field
       apply hu'
       exact ⟨1, rfl⟩
     have : u.2 = 0 := by
-      simpa [EvalMap_apply, map_one, Module.End.one_apply, LinearMap.snd_apply] using hu''
+      simpa [EvalMap_apply, map_one, Module.End.one_apply, e', LinearMap.snd_apply] using hu''
     simp [Submodule.fst, LinearMap.snd_apply, this]
   have hτW : ∀ w ∈ W, τ.dualMap w ∈ W := dual_evalmap_stable_range τ e'
   have hτU : ∀ u ∈ U, τ u ∈ U := stable_coannihilator_of_stable_module R τ hτW
@@ -542,31 +541,17 @@ theorem cyclic_e'_of_coprime_charpoly_field
 
 /-
 
-The following pair of results would be useful for extending the above
-from fields to general rings.
+The following result would be useful for extending the above from
+fields to general rings.
 
 -/
-theorem one_not_mem_annihilator_of_not_bot {R : Type} [CommRing R] {M : Type} [AddCommGroup M] [Module R M]
-  (N : Submodule R M)
-  (hN : N ≠ ⊥)
-  : (1 : R) ∉ Submodule.annihilator N := by
-  by_contra a
-  have : ∃ x ∈ N, x ≠ 0 := (Submodule.ne_bot_iff N).mp hN
-  rcases this with ⟨x, hx, hx'⟩
-  have : (1 : R) • x = (0 : M) := by
-    rw [Submodule.mem_annihilator] at a
-    exact a x hx
-  simp only [one_smul] at this
-  exact hx' this
-
-
 theorem exists_maximal_smul_le_of_ne_bot_of_fg {R : Type} [CommRing R] {M : Type} [AddCommGroup M] [Module R M]
   (N : Submodule R M)
   (hN : Submodule.FG N)
   (hN' : N ≠ ⊥)
   : ∃ P : Ideal R, P.IsMaximal ∧ P • N < N := by
   set A := Submodule.annihilator N
-  have hA : A ≠ ⊤ := (Ideal.ne_top_iff_one A).mpr (one_not_mem_annihilator_of_not_bot N hN')
+  have hA : A ≠ ⊤ := fun h => hN' (Submodule.annihilator_eq_top_iff.mp h)
   have : ∃ P : Ideal R, P.IsMaximal ∧ A ≤ P := Ideal.exists_le_maximal A hA
   rcases this with ⟨P, hP, hP'⟩
   use P
@@ -642,19 +627,6 @@ theorem aux_isom_thms
     simpa [map_smul] using hmem
   exact hmap_le hx'
 
-
-open Polynomial Function in
-theorem mapRingHom_surjective
-  (R : Type) [CommRing R]
-  (S : Type) [CommRing S]
-  (f : R →+* S)
-  (hf : Surjective f)
-  : Surjective (mapRingHom f)
-  := by
-  intro p
-  rcases Polynomial.map_surjective (f := f) hf p with ⟨q, hq⟩
-  refine ⟨q, ?_⟩
-  simpa [coe_mapRingHom] using hq
 
 open Polynomial in
 lemma dualMap_pow_apply
@@ -1085,20 +1057,21 @@ theorem cyclic_e'_of_coprime_charpoly
               simpa using
                 (TensorProduct.quotTensorEquivQuotSMul_mk_tmul (M := V) (I := P) (r := (1 : R))
                   (x := v))
-            simpa [qVR, Submodule.mkQ_apply] using h
+            simpa +zetaDelta [qVR, Submodule.mkQ_apply] using h
           ·
             have h :
                 (r • (1 : R_mod_P)) = (Ideal.Quotient.mk P r) := by
               dsimp [R_mod_P]
               simp [Algebra.smul_def, Ideal.Quotient.algebraMap_eq]
-            simpa [qVR, Submodule.mkQ_apply] using h
+            simpa +zetaDelta [qVR, Submodule.mkQ_apply] using h
     let πX : (Dual R (V × R)) →ₗ[R] (Dual R_mod_P (V_mod_P × R_mod_P)) :=
       (IsBaseChange.toDual (ibc := ibc_qVR))
     let x_mod_P : X_mod_P := by
       use πX x
       exact Submodule.mem_top
     rcases field_case x_mod_P with ⟨ p_mod_P, hp_mod_P ⟩
-    rcases mapRingHom_surjective R R_mod_P π (Ideal.Quotient.mkₐ_surjective R P) p_mod_P with ⟨ p, hp ⟩
+    rcases Polynomial.map_surjective (algebraMap R R_mod_P) Ideal.Quotient.mk_surjective p_mod_P
+      with ⟨ p, hp ⟩
     use p
     have eval_commutes_reduction : ∀ y : Dual R (V × R), πX ((EvalMap τ.dualMap y) p) = ((EvalMap τ_mod_P.dualMap (πX y)) p_mod_P) := by
       intro y
@@ -1115,13 +1088,13 @@ theorem cyclic_e'_of_coprime_charpoly
                 simpa using
                   (TensorProduct.quotTensorEquivQuotSMul_mk_tmul (M := V) (I := P) (r := (1 : R))
                     (x := v))
-              simpa [qVR, Submodule.mkQ_apply] using h
+              simpa +zetaDelta [qVR, Submodule.mkQ_apply] using h
             ·
               have h :
                   (r • (1 : R_mod_P)) = (Ideal.Quotient.mk P r) := by
                 dsimp [R_mod_P]
                 simp [Algebra.smul_def, Ideal.Quotient.algebraMap_eq]
-              simpa [qVR, Submodule.mkQ_apply] using h
+              simpa +zetaDelta [qVR, Submodule.mkQ_apply] using h
       have hqVR_symm : ∀ x, eVR_S.symm (qVR x) = (1 : R_mod_P) ⊗ₜ[R] x := by
         intro x
         apply (LinearEquiv.symm_apply_eq eVR_S).mpr
@@ -1155,8 +1128,7 @@ theorem cyclic_e'_of_coprime_charpoly
           (aeval (R := R_mod_P) τ_mod_P p_mod_P) (qVR x) =
             qVR ((aeval (R := R) τ p) x) := by
         -- rewrite p_mod_P via hp and τ_mod_P via hτ_mod_P_eq
-        have hp' : p_mod_P = p.map (algebraMap R R_mod_P) := by
-          simpa [coe_mapRingHom] using hp.symm
+        have hp' : p_mod_P = p.map (algebraMap R R_mod_P) := hp.symm
         simpa [hτ_mod_P_eq, hp'] using
           (aeval_endHom_comp_apply (ibc := ibc_qVR) (τ := τ) (p := p) (m := x))
       -- finish by evaluating both sides at qVR x
@@ -1392,7 +1364,8 @@ theorem κ_e
   ext v
   simp only [LinearEquiv.trans_apply, evalEquiv_apply, coe_comp, coe_inl, Function.comp_apply,
     LinearEquiv.dualMap_apply, LinearEquiv.prodCongr_apply, LinearEquiv.refl_apply, map_zero,
-    coprodEquiv_apply, Dual.eval_apply, coprod_apply, zero_apply, add_zero, snd_comp_inl]
+    coprodEquiv_apply, Dual.eval_apply, coprod_apply, LinearMap.zero_apply, add_zero,
+    snd_comp_inl]
   simp only [LinearEquiv.trans_apply, evalEquiv_apply, coe_comp, coe_inr, Function.comp_apply,
     LinearEquiv.dualMap_apply, LinearEquiv.prodCongr_apply, map_zero, ringLmapEquivSelf_symm_apply,
     coprodEquiv_apply, Dual.eval_apply, coprod_apply, coe_smulRight, smul_eq_mul,
@@ -1576,7 +1549,7 @@ theorem upper_left_coprimality_dual
   have h₁ : τ.charpoly = τ'.charpoly := by
     calc
     _ = τ.dualMap.charpoly := (charpoly_dualmap_eq_charpoly τ).symm
-    _ = τ'.charpoly := charpoly_eq_conj_charpoly (κ' R V) τ.dualMap
+    _ = τ'.charpoly := (LinearEquiv.charpoly_conj (κ' R V) τ.dualMap).symm
   have h₂ : (upperLeftProj R V R τ).charpoly = (upperLeftProj R V' R τ').charpoly := by
     rw [upper_left_conj_κ']
     rw [← charpoly_dualmap_eq_charpoly]

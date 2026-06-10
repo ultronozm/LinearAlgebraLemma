@@ -52,7 +52,7 @@ theorem upperLeftIncl_apply
     : upperLeftIncl R V₁ V₂ x = (LinearMap.inl R V₁ V₂) ∘ₗ x ∘ₗ (LinearMap.fst R V₁ V₂) := rfl
 
 open Polynomial in
-def EvalMap
+noncomputable def EvalMap
     {R : Type} [CommSemiring R]
     {V : Type} [AddCommGroup V] [Module R V]
     (τ : Module.End R V) (v : V)

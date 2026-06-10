@@ -3,6 +3,10 @@ import LinearAlgebraLemma.Defs
 import LinearAlgebraLemma.InjectiveOfCyclic
 import LinearAlgebraLemma.CyclicOfCoprime
 
+/- Mathlib no longer registers the commutator-bracket Lie ring structure on
+associative rings as a global instance; restore it locally. -/
+attribute [local instance 100] LieRing.ofAssociativeRing
+
 /-!
 
 # Main results:
@@ -91,9 +95,9 @@ theorem aux_commutators
     let e' : Dual R (V × R) := snd R V R
     ⁅x, (upperLeftIncl R V R) 1⁆ e = - (x - (e' (x e)) • 1) e := by
   rw [comm_one_H]
-  simp only [sub_apply, Module.End.mul_apply, coe_comp, Function.comp_apply, snd_apply,
-    toSpanSingleton_apply, Prod.smul_mk, smul_zero, smul_eq_mul, mul_one, one_smul, smul_apply,
-    Module.End.one_apply, neg_sub]
+  simp only [LinearMap.sub_apply, Module.End.mul_apply, coe_comp, Function.comp_apply, snd_apply,
+    toSpanSingleton_apply, Prod.smul_mk, smul_zero, smul_eq_mul, mul_one, one_smul,
+    LinearMap.smul_apply, Module.End.one_apply, neg_sub]
 
 /-
 
@@ -113,12 +117,12 @@ theorem aux_commutators'
     e' ∘ₗ ⁅x, (upperLeftIncl R V R) 1⁆ = e' ∘ₗ (x - (e' (x e)) • (1 : End R (V × R))) := by
   rw [comm_one_H]
   ext v
-  · simp only [coe_comp, coe_inl, Function.comp_apply, sub_apply, Module.End.mul_apply, snd_apply,
-    toSpanSingleton_apply, Prod.smul_mk, smul_zero, smul_eq_mul, mul_one, map_zero, sub_zero,
-    smul_apply, Module.End.one_apply, mul_zero, map_sub]
-  · simp only [coe_comp, coe_inr, Function.comp_apply, sub_apply, Module.End.mul_apply, snd_apply,
-    toSpanSingleton_apply, Prod.smul_mk, smul_zero, smul_eq_mul, mul_one, one_smul, map_sub,
-    sub_self, smul_apply, Module.End.one_apply]
+  · simp only [coe_comp, coe_inl, Function.comp_apply, LinearMap.sub_apply, Module.End.mul_apply,
+    snd_apply, toSpanSingleton_apply, Prod.smul_mk, smul_zero, smul_eq_mul, mul_one, map_zero,
+    sub_zero, LinearMap.smul_apply, Module.End.one_apply, mul_zero, map_sub]
+  · simp only [coe_comp, coe_inr, Function.comp_apply, LinearMap.sub_apply, Module.End.mul_apply,
+    snd_apply, toSpanSingleton_apply, Prod.smul_mk, smul_zero, smul_eq_mul, mul_one, one_smul,
+    map_sub, sub_self, LinearMap.smul_apply, Module.End.one_apply]
 
 /-
 
