@@ -1054,10 +1054,8 @@ theorem cyclic_e'_of_coprime_charpoly
             have h :
                 (TensorProduct.quotTensorEquivQuotSMul V P) (1 ⊗ₜ[R] v) =
                   (Submodule.Quotient.mk (p := (P • ⊤ : Submodule R V)) v) := by
-              simpa using
-                (TensorProduct.quotTensorEquivQuotSMul_mk_tmul (M := V) (I := P) (r := (1 : R))
-                  (x := v))
-            simpa +zetaDelta [qVR, Submodule.mkQ_apply] using h
+              simp
+            simp +zetaDelta [Submodule.mkQ_apply, h]
           ·
             have h :
                 (r • (1 : R_mod_P)) = (Ideal.Quotient.mk P r) := by
@@ -1085,10 +1083,8 @@ theorem cyclic_e'_of_coprime_charpoly
               have h :
                   (TensorProduct.quotTensorEquivQuotSMul V P) (1 ⊗ₜ[R] v) =
                     (Submodule.Quotient.mk (p := (P • ⊤ : Submodule R V)) v) := by
-                simpa using
-                  (TensorProduct.quotTensorEquivQuotSMul_mk_tmul (M := V) (I := P) (r := (1 : R))
-                    (x := v))
-              simpa +zetaDelta [qVR, Submodule.mkQ_apply] using h
+                simp
+              simp +zetaDelta [Submodule.mkQ_apply, h]
             ·
               have h :
                   (r • (1 : R_mod_P)) = (Ideal.Quotient.mk P r) := by
@@ -1225,7 +1221,7 @@ theorem cyclic_e'_of_coprime_charpoly
                         (Submodule.mkQ (p := (P : Submodule R R)) r : R_mod_P) := by
                       rfl
                     _ = (LinearMap.snd R_mod_P V_mod_P R_mod_P) (qVR (v, r)) := by
-                      simpa [qVR]
+                      simp [qVR]
                 exact hmk.trans hmk'
       have h2 : πX (EvalMap τ.dualMap e' p) =
           EvalMap τ_mod_P.dualMap (LinearMap.snd R_mod_P V_mod_P R_mod_P) p_mod_P := by
