@@ -28,7 +28,7 @@ import Mathlib.RingTheory.Ideal.Quotient.Basic
 import Mathlib.RingTheory.Nakayama
 import Mathlib.RingTheory.TensorProduct.IsBaseChangeHom
 import Mathlib.Tactic
-import LinearAlgebraLemma.Defs
+import LinearAlgebraLemma.InjectiveOfCyclic
 
 open scoped TensorProduct
 
@@ -44,6 +44,482 @@ The latter is proved directly.  The formed is deduced from the latter
 via a duality argument.
 
 -/
+
+theorem upper_left_action
+    (R : Type) [CommRing R]
+    (V₁ : Type) [AddCommGroup V₁] [Module R V₁]
+    (V₂ : Type) [AddCommGroup V₂] [Module R V₂]
+    (x : Module.End R (V₁ × V₂))
+    (v₁ : V₁)
+    : (x (v₁, 0)).1 = (upperLeftProj R V₁ V₂ x) v₁ := rfl
+
+theorem eV_smul_baseChange
+  (R : Type) [CommRing R]
+  (V : Type) [AddCommGroup V] [Module R V]
+  (P : Ideal R)
+  (a : R ⧸ P) (x : (R ⧸ P) ⊗[R] V) :
+    (TensorProduct.quotTensorEquivQuotSMul V P) (a • x) =
+      a • (TensorProduct.quotTensorEquivQuotSMul V P) x := by
+  refine TensorProduct.induction_on x ?_ ?_ ?_
+  · simp only [smul_zero, map_zero]
+  · intro r v
+    refine Quot.induction_on r ?_
+    intro r
+    refine Quot.induction_on a ?_
+    intro a
+    have hmul : (Ideal.Quotient.mk P a) * (Ideal.Quotient.mk P r) =
+        Ideal.Quotient.mk P (a * r) := by
+      simp only [map_mul]
+    calc
+      (TensorProduct.quotTensorEquivQuotSMul V P)
+          ((Ideal.Quotient.mk P a * Ideal.Quotient.mk P r) ⊗ₜ[R] v)
+          =
+          (TensorProduct.quotTensorEquivQuotSMul V P)
+            (Ideal.Quotient.mk P (a * r) ⊗ₜ[R] v) := by
+              rw [hmul]
+      _ = Submodule.Quotient.mk ((a * r) • v) := by
+            simpa using
+              (TensorProduct.quotTensorEquivQuotSMul_mk_tmul (M := V) (I := P) (r := a * r)
+                (x := v))
+      _ = Ideal.Quotient.mk P a • Submodule.Quotient.mk (r • v) := by
+            calc
+              Submodule.Quotient.mk ((a * r) • v)
+                  = Submodule.Quotient.mk (a • (r • v)) := by
+                      simp only [mul_smul, Submodule.Quotient.mk_smul]
+              _ = Ideal.Quotient.mk P a • Submodule.Quotient.mk (r • v) := by
+                      simp only [Submodule.Quotient.mk_smul, Module.IsTorsionBySet.mk_smul]
+  · intro x y hx hy
+    simp [hx, hy, map_add, smul_add]
+
+theorem eR_smul_baseChange
+  (R : Type) [CommRing R]
+  (P : Ideal R)
+  (a : R ⧸ P) (x : (R ⧸ P) ⊗[R] R) :
+    (TensorProduct.rid R (R ⧸ P)) (a • x) =
+      a • (TensorProduct.rid R (R ⧸ P)) x := by
+  refine TensorProduct.induction_on x ?_ ?_ ?_
+  · simp
+  · intro r s
+    refine Quot.induction_on r ?_
+    intro r
+    refine Quot.induction_on a ?_
+    intro a
+    have hmul : (Ideal.Quotient.mk P a) * (Ideal.Quotient.mk P r) =
+        Ideal.Quotient.mk P (a * r) := by
+      simp only [map_mul]
+    calc
+      (TensorProduct.rid R (R ⧸ P))
+          ((Ideal.Quotient.mk P a * Ideal.Quotient.mk P r) ⊗ₜ[R] s)
+          =
+          (TensorProduct.rid R (R ⧸ P))
+            (Ideal.Quotient.mk P (a * r) ⊗ₜ[R] s) := by
+              rw [hmul]
+      _ = s • Ideal.Quotient.mk P (a * r) := by
+            simp [TensorProduct.rid_tmul]
+      _ = Ideal.Quotient.mk P a • (s • Ideal.Quotient.mk P r) := by
+            simp [smul_eq_mul, mul_comm]
+      _ = Ideal.Quotient.mk P a •
+            (TensorProduct.rid R (R ⧸ P) (Ideal.Quotient.mk P r ⊗ₜ[R] s)) := by
+            simp [TensorProduct.rid_tmul]
+  · intro x y hx hy
+    simp [hx, hy, map_add, smul_add, mul_add]
+
+lemma upperLeftProj_baseChange_tmul
+    (R : Type) [CommRing R]
+    (V : Type) [AddCommGroup V] [Module R V]
+    (P : Ideal R)
+    (τ : Module.End R (V × R))
+    (a : R ⧸ P) (v : V) :
+    let R_mod_P := R ⧸ P
+    let e1 := TensorProduct.prodRight R R_mod_P R_mod_P V R
+    let τ1 : Module.End R_mod_P (R_mod_P ⊗[R] V × R_mod_P ⊗[R] R) :=
+      e1.conj (τ.baseChange R_mod_P)
+    (upperLeftProj R_mod_P (R_mod_P ⊗[R] V) (R_mod_P ⊗[R] R) τ1) (a ⊗ₜ[R] v) =
+      (LinearMap.baseChange R_mod_P (upperLeftProj R V R τ)) (a ⊗ₜ[R] v) := by
+  classical
+  have hsymm :
+      (TensorProduct.prodRight R (R ⧸ P) (R ⧸ P) V R).symm (a ⊗ₜ[R] v, 0) =
+        a ⊗ₜ[R] (v, 0) := by
+    simpa using
+      (TensorProduct.prodRight_symm_tmul (R := R) (S := R ⧸ P) (M₁ := R ⧸ P)
+        (M₂ := V) (M₃ := R) a v (0 : R))
+  calc
+    ((TensorProduct.prodRight R (R ⧸ P) (R ⧸ P) V R)
+        ((LinearMap.baseChange (R ⧸ P) τ)
+          ((TensorProduct.prodRight R (R ⧸ P) (R ⧸ P) V R).symm (a ⊗ₜ[R] v, 0)))).1
+        =
+      ((TensorProduct.prodRight R (R ⧸ P) (R ⧸ P) V R)
+        ((LinearMap.baseChange (R ⧸ P) τ) (a ⊗ₜ[R] (v, 0)))).1 := by
+          simp [hsymm]
+    _ =
+      ((TensorProduct.prodRight R (R ⧸ P) (R ⧸ P) V R)
+        (a ⊗ₜ[R] (τ (v, 0)))).1 := by
+          simp [LinearMap.baseChange_tmul]
+    _ = a ⊗ₜ[R] (τ (v, 0)).1 := by
+          simp [TensorProduct.prodRight_tmul]
+    _ = a ⊗ₜ[R] ((upperLeftProj R V R τ) v) := by
+          rw [upper_left_action R V R τ v]
+
+lemma upperLeftProj_baseChange_add
+    (R : Type) [CommRing R]
+    (V : Type) [AddCommGroup V] [Module R V]
+    (P : Ideal R)
+    (τ : Module.End R (V × R))
+    (x y : (R ⧸ P) ⊗[R] V)
+    (hx :
+      let R_mod_P := R ⧸ P
+      let e1 := TensorProduct.prodRight R R_mod_P R_mod_P V R
+      let τ1 : Module.End R_mod_P (R_mod_P ⊗[R] V × R_mod_P ⊗[R] R) :=
+        e1.conj (τ.baseChange R_mod_P)
+      (upperLeftProj R_mod_P (R_mod_P ⊗[R] V) (R_mod_P ⊗[R] R) τ1) x =
+        (LinearMap.baseChange R_mod_P (upperLeftProj R V R τ)) x)
+    (hy :
+      let R_mod_P := R ⧸ P
+      let e1 := TensorProduct.prodRight R R_mod_P R_mod_P V R
+      let τ1 : Module.End R_mod_P (R_mod_P ⊗[R] V × R_mod_P ⊗[R] R) :=
+        e1.conj (τ.baseChange R_mod_P)
+      (upperLeftProj R_mod_P (R_mod_P ⊗[R] V) (R_mod_P ⊗[R] R) τ1) y =
+        (LinearMap.baseChange R_mod_P (upperLeftProj R V R τ)) y) :
+    let R_mod_P := R ⧸ P
+    let e1 := TensorProduct.prodRight R R_mod_P R_mod_P V R
+    let τ1 : Module.End R_mod_P (R_mod_P ⊗[R] V × R_mod_P ⊗[R] R) :=
+      e1.conj (τ.baseChange R_mod_P)
+    (upperLeftProj R_mod_P (R_mod_P ⊗[R] V) (R_mod_P ⊗[R] R) τ1) (x + y) =
+    (LinearMap.baseChange R_mod_P (upperLeftProj R V R τ)) (x + y) := by
+  dsimp at hx hy
+  dsimp
+  let R_mod_P := R ⧸ P
+  let e1 := TensorProduct.prodRight R R_mod_P R_mod_P V R
+  let τ1 : Module.End R_mod_P (R_mod_P ⊗[R] V × R_mod_P ⊗[R] R) :=
+    e1.conj (τ.baseChange R_mod_P)
+  let f : Module.End R_mod_P (R_mod_P ⊗[R] V) :=
+    upperLeftProj R_mod_P (R_mod_P ⊗[R] V) (R_mod_P ⊗[R] R) τ1
+  let g : Module.End R_mod_P (R_mod_P ⊗[R] V) :=
+    LinearMap.baseChange R_mod_P (upperLeftProj R V R τ)
+  have hleft (z : R_mod_P ⊗[R] V) : f z = (τ1 (z, 0)).1 := by
+    simp only [upperLeftProj_apply, LinearMap.coe_comp, LinearMap.coe_fst, LinearMap.coe_inl,
+      Function.comp_apply, f]
+  have hx' : f x = g x := by
+    simpa [f, g, hleft, τ1, e1] using hx
+  have hy' : f y = g y := by
+    simpa [f, g, hleft, τ1, e1] using hy
+  calc
+    f (x + y) = f x + f y := by simp only [map_add]
+    _ = g x + g y := by simp only [hx', hy']
+    _ = g (x + y) := by simp only [map_add]
+
+lemma upperLeftProj_baseChange_prodRight
+    (R : Type) [CommRing R]
+    (V : Type) [AddCommGroup V] [Module R V]
+    (P : Ideal R)
+    (τ : Module.End R (V × R)) :
+    let R_mod_P := R ⧸ P
+    let e1 := TensorProduct.prodRight R R_mod_P R_mod_P V R
+    let τ1 : Module.End R_mod_P (R_mod_P ⊗[R] V × R_mod_P ⊗[R] R) :=
+      e1.conj (τ.baseChange R_mod_P)
+    upperLeftProj R_mod_P (R_mod_P ⊗[R] V) (R_mod_P ⊗[R] R) τ1 =
+      (upperLeftProj R V R τ).baseChange R_mod_P := by
+  classical
+  apply LinearMap.ext
+  intro x
+  refine TensorProduct.induction_on x ?_ ?_ ?_
+  ·
+    have hsymm :
+        (TensorProduct.prodRight R (R ⧸ P) (R ⧸ P) V R).symm (0, 0) =
+          (0 : (R ⧸ P) ⊗[R] (V × R)) := by
+      simp
+    calc
+      ((TensorProduct.prodRight R (R ⧸ P) (R ⧸ P) V R)
+          ((LinearMap.baseChange (R ⧸ P) τ)
+            ((TensorProduct.prodRight R (R ⧸ P) (R ⧸ P) V R).symm (0, 0)))).1
+          =
+        ((TensorProduct.prodRight R (R ⧸ P) (R ⧸ P) V R)
+          ((LinearMap.baseChange (R ⧸ P) τ) (0 : (R ⧸ P) ⊗[R] (V × R)))).1 := by
+            simp [hsymm]
+      _ = 0 := by simp
+  · intro a v
+    simpa using
+      (upperLeftProj_baseChange_tmul (R := R) (V := V) (P := P) (τ := τ) a v)
+  · intro x y hx hy
+    simpa using
+      (upperLeftProj_baseChange_add (R := R) (V := V) (P := P) (τ := τ) x y hx hy)
+
+theorem upper_left_action_on_invariant_subspace
+    {R : Type} [CommRing R]
+    {V₁ : Type} [AddCommGroup V₁] [Module R V₁]
+    {V₂ : Type} [AddCommGroup V₂] [Module R V₂]
+    {U : Submodule R (V₁ × V₂)}
+    (hU : U ≤ Submodule.fst R V₁ V₂)
+    {x : Module.End R (V₁ × V₂)}
+    (hx : ∀ u ∈ U, x u ∈ U)
+    {v₁ : V₁}
+    (hv₁ : (v₁, 0) ∈ U)
+    : x (v₁, 0) = ((upperLeftProj R V₁ V₂ x) v₁, 0) := by
+  have h : x (v₁, 0) ∈ U := hx (v₁, 0) hv₁
+  replace h := hU h
+  have h₂ : (x (v₁, 0)).2 = 0 := by exact h
+  have h₃ : (x (v₁, 0)) = ((x (v₁, 0)).1, (x (v₁, 0)).2) := by simp only [Prod.mk.eta]
+  rw [h₃, h₂, upper_left_action R V₁ V₂ x v₁]
+
+open Polynomial in
+theorem monomial_induction_helper
+    {R : Type} [CommRing R]
+    {V : Type} [AddCommGroup V] [Module R V]
+    (c : R)
+    (n : ℕ)
+    (τ : Module.End R V)
+    (v : V)
+    : ((aeval (R := R) τ) ((monomial (Nat.succ n)) c)) v =
+      τ (((aeval (R := R) τ) ((monomial n) c)) v) := by
+  rw [(X_mul_monomial n c).symm, aeval_mul τ, aeval_X τ]
+  rfl
+
+open Polynomial in
+theorem polynomial_of_stabilizing_element_stabilizes
+    (R : Type) [CommRing R]
+    {V : Type} [AddCommGroup V] [Module R V]
+    {U : Submodule R V}
+    (τ : Module.End R V)
+    (h : ∀ v ∈ U, τ v ∈ U)
+    (p : R[X])
+    : ∀ v ∈ U, ((aeval (R := R) τ) p) v ∈ U := by
+  induction' p using Polynomial.induction_on' with p q hp hq n a
+  · intro v hv
+    simp only [map_add, LinearMap.add_apply]
+    exact Submodule.add_mem U (hp v hv) (hq v hv)
+  induction' n with n hn
+  · simp only [monomial_zero_left, aeval_C, Module.algebraMap_end_apply]
+    exact fun v a_1 => Submodule.smul_mem U a a_1
+  intro v hv
+  rw [monomial_induction_helper a n τ v]
+  apply h
+  exact hn v hv
+
+open Polynomial in
+theorem apply_polynomials_upper_left
+    (R : Type) [CommRing R]
+    (V₁ : Type) [AddCommGroup V₁] [Module R V₁]
+    (V₂ : Type) [AddCommGroup V₂] [Module R V₂]
+    (U : Submodule R (V₁ × V₂))
+    (hU : U ≤ (Submodule.fst R V₁ V₂))
+    (τ : Module.End R (V₁ × V₂))
+    (hτ : ∀ v ∈ U, τ v ∈ U)
+    (f : R[X])
+    (v : V₁)
+    (hv : (v, 0) ∈ U)
+    : (aeval (R := R) τ f) (v, 0) = ((aeval (R := R) (upperLeftProj R V₁ V₂ τ) f) v, 0)
+    := by
+  let τ₀ : Module.End R V₁ := (upperLeftProj R V₁ V₂ τ)
+  induction' f using Polynomial.induction_on' with p q hp hq f_n f_a
+  · simp only [map_add, LinearMap.add_apply, hp, upperLeftProj_apply, hq, Prod.mk_add_mk, add_zero]
+  · induction' f_n with f_n hf_n
+    · simp only [monomial_zero_left, aeval_C, Module.algebraMap_end_apply,
+      Prod.smul_mk, smul_zero, upperLeftProj_apply]
+    calc
+    _ = τ (((aeval (R := R) τ) ((monomial f_n) f_a)) (v, 0))
+      := monomial_induction_helper f_a f_n τ (v, 0)
+    _ = τ (((aeval (R := R) τ₀) ((monomial f_n) f_a)) v, 0) := by rw [hf_n]
+    _ = (τ₀ (((aeval (R := R) τ₀) ((monomial f_n) f_a)) v), 0) := by
+      have h' : (((aeval (R := R) τ₀) ((monomial f_n) f_a)) v, 0) ∈ U := by
+        rw [← hf_n]
+        apply polynomial_of_stabilizing_element_stabilizes R τ hτ _
+        exact hv
+      exact upper_left_action_on_invariant_subspace hU hτ h'
+    _ = (((aeval (R := R) τ₀) ((monomial (Nat.succ f_n)) f_a)) v, 0) := by
+      rw [← monomial_induction_helper f_a f_n τ₀ v]
+
+open Polynomial in
+theorem no_invariant_subspaces_of_coprime_charpoly
+    (R : Type) [CommRing R] [Nontrivial R]
+    (V : Type) [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
+    (τ : Module.End R (V × R))
+    (hτ : IsCoprime τ.charpoly (upperLeftProj R V R τ).charpoly)
+    (U : Submodule R (V × R))
+    (hU : U ≤ (Submodule.fst R V R))
+    (hτU : ∀ v ∈ U, τ v ∈ U)
+    : U = ⊥
+    := by
+  rcases hτ with ⟨ x, y, hxy ⟩
+  have CH : (aeval (R := R) τ) τ.charpoly = 0 := LinearMap.aeval_self_charpoly τ
+  rw [Submodule.eq_bot_iff]
+  intro u hu
+  have h : u = ((aeval (R := R) τ) (1 : R[X])) u := by simp only [map_one, Module.End.one_apply]
+  rw [← hxy] at h
+  rw [map_add, map_mul, CH] at h
+  simp only [mul_zero, upperLeftProj_apply, map_mul, zero_add, Module.End.mul_apply] at h
+  have ez1 : u ∈ Submodule.fst R V R := hU hu
+  have ez2 : u = (u.1, u.2) := by simp only [Prod.mk.eta]
+  have ez3 : u = (u.1, 0) := by
+    unfold Submodule.fst at ez1
+    simp only [Submodule.comap_bot, LinearMap.mem_ker, LinearMap.snd_apply] at ez1
+    rw [ez1] at ez2
+    exact ez2
+  let pH : R[X] := (LinearMap.charpoly ((upperLeftProj R V R) τ))
+  let τH : Module.End R V := ((upperLeftProj R V R) τ)
+  have key1 : ((aeval (R := R) τ) pH) u = (((aeval (R := R) τH) pH) u.1, 0) := by
+    nth_rw 1 [ez3]
+    have ez4 : (u.1, 0) ∈ U := by
+      rw [ez3] at hu
+      exact hu
+    exact apply_polynomials_upper_left R V R U hU τ hτU pH u.1 ez4
+  have CH2 : ((aeval (R := R) τH) pH) = 0 := LinearMap.aeval_self_charpoly τH
+  rw [CH2] at key1
+  simp only [LinearMap.zero_apply] at key1
+  have h' : u = ((aeval (R := R) τ) y) (((aeval (R := R) τ) pH) u) := by
+    simpa [pH, upperLeftProj_apply] using h
+  rw [key1] at h'
+  have h'' : u = ((aeval (R := R) τ) y) (0 : V × R) := by
+    simpa [Prod.zero_eq_mk] using h'
+  rw [map_zero] at h''
+  exact h''
+
+open Polynomial in
+theorem dual_evalmap_stable_range
+    {R : Type} [CommRing R]
+    {V : Type} [AddCommGroup V] [Module R V]
+    (τ : Module.End R V)
+    (e' : Module.Dual R V)
+    :
+    let W : Submodule R (Module.Dual R V) := LinearMap.range (EvalMap τ.dualMap e')
+    ∀ w ∈ W, τ.dualMap w ∈ W := by
+  intro W w hw
+  rcases hw with ⟨ p, hp ⟩
+  rw [LinearMap.mem_range]
+  use (X * p : R[X])
+  rw [EvalMap_apply, ← hp]
+  simp only [map_mul, aeval_X, Module.End.mul_apply, EvalMap_apply]
+
+theorem stable_coannihilator_of_stable_module
+    (R : Type) [CommRing R]
+    {V : Type} [AddCommGroup V] [Module R V]
+    (τ : Module.End R V)
+    {W : Submodule R (Module.Dual R V)}
+    (hW : ∀ w ∈ W, τ.dualMap w ∈ W)
+    : ∀ v ∈ Submodule.dualCoannihilator W, τ v ∈ Submodule.dualCoannihilator W := by
+  intro v hv
+  simp only [Submodule.dualCoannihilator, Submodule.mem_comap, Submodule.mem_dualAnnihilator,
+    Module.Dual.eval_apply] at hv ⊢
+  intro w hw
+  have h : τ.dualMap w ∈ W := hW w hw
+  exact hv (τ.dualMap w) h
+
+theorem aux_isom_thms
+    (R : Type) [CommRing R]
+    (V : Type) [AddCommGroup V] [Module R V]
+    (W : Submodule R V)
+    (P : Ideal R)
+    :
+    (⊤ : Submodule R V) ≤ W ⊔ (P • (⊤ : Submodule R V)) →
+      (⊤ : Submodule R (V ⧸ W)) ≤ (P • (⊤ : Submodule R (V ⧸ W))) := by
+  intro h x hx
+  have hsup : W ⊔ (P • (⊤ : Submodule R V)) = ⊤ := (top_le_iff.mp h)
+  have hmap :
+      Submodule.map (Submodule.mkQ W) (P • (⊤ : Submodule R V)) = ⊤ := by
+    exact (Submodule.map_mkQ_eq_top (p := W) (p' := P • (⊤ : Submodule R V))).2 hsup
+  have hx' : x ∈ Submodule.map (Submodule.mkQ W) (P • (⊤ : Submodule R V)) := by
+    simp only [hmap, Submodule.mem_top]
+  have hmap_le : Submodule.map (Submodule.mkQ W) (P • (⊤ : Submodule R V)) ≤
+      (P • (⊤ : Submodule R (V ⧸ W))) := by
+    refine (Submodule.map_le_iff_le_comap).2 ?_
+    refine (Submodule.smul_le).2 ?_
+    intro r hr v hv
+    have hv' : (Submodule.mkQ W) v ∈ (⊤ : Submodule R (V ⧸ W)) := by
+      exact Submodule.mem_top
+    have hmem : r • (Submodule.mkQ W v) ∈ P • (⊤ : Submodule R (V ⧸ W)) :=
+      Submodule.smul_mem_smul hr hv'
+    simpa [map_smul] using hmem
+  exact hmap_le hx'
+
+open Polynomial in
+lemma eval_dual_apply
+    {R : Type} [CommRing R]
+    {V : Type} [AddCommGroup V] [Module R V]
+    (τ : Module.End R V) (y : Module.Dual R V) (p : R[X]) (v : V) :
+    (EvalMap τ.dualMap y p) v = y ((aeval (R := R) τ p) v) := by
+  classical
+  induction' p using Polynomial.induction_on' with p q hp hq n c
+  ·
+    have hp' : ((aeval τ.dualMap p) y) v = y ((aeval (R := R) τ p) v) := by
+      simpa [EvalMap_apply] using hp
+    have hq' : ((aeval τ.dualMap q) y) v = y ((aeval (R := R) τ q) v) := by
+      simpa [EvalMap_apply] using hq
+    calc
+      (EvalMap τ.dualMap y (p + q)) v
+          = (((aeval τ.dualMap p) y) v + ((aeval τ.dualMap q) y) v) := by
+              simp [EvalMap_apply, aeval_add, LinearMap.add_apply]
+      _ = y ((aeval (R := R) τ p) v) + y ((aeval (R := R) τ q) v) := by
+              simp only [hp', hq']
+      _ = y ((aeval (R := R) τ (p + q)) v) := by
+          simp [aeval_add, LinearMap.add_apply]
+  induction' n with n hn
+  · simp [EvalMap_apply, monomial_zero_left, aeval_C, Module.algebraMap_end_apply]
+  calc
+    (EvalMap τ.dualMap y (monomial (Nat.succ n) c)) v
+        = (c • (((τ.dualMap) ^ (n + 1)) y)) v := by
+            simp [EvalMap_apply, aeval_monomial, LinearMap.smul_apply]
+    _ = c • y ((τ ^ (n + 1)) v) := by
+            simp [dualMap_pow_apply]
+    _ = y ((aeval (R := R) τ (monomial (Nat.succ n) c)) v) := by
+            simp [aeval_monomial]
+
+open Polynomial in
+lemma endHom_pow_apply
+    {R : Type} [CommRing R]
+    {S : Type} [CommRing S] [Algebra R S]
+    {M : Type} [AddCommGroup M] [Module R M]
+    {P : Type} [AddCommGroup P] [Module R P] [Module S P] [IsScalarTower R S P]
+    {j : M →ₗ[R] P} (ibc : IsBaseChange S j)
+    [Module.Free R M] [Module.Finite R M]
+    (τ : Module.End R M) :
+    ∀ n (m : M), ((ibc.endHom τ) ^ n) (j m) = j ((τ ^ n) m) := by
+  intro n
+  induction n with
+  | zero =>
+      intro m
+      simp
+  | succ n hn =>
+      intro m
+      have h1 : (ibc.endHom τ) (j m) = j (τ m) := by
+        simpa using (IsBaseChange.endHom_comp_apply (j := ibc) (f := τ) (m := m))
+      simp [pow_succ, Module.End.mul_apply, hn, h1]
+
+open Polynomial in
+lemma aeval_endHom_comp_apply
+    {R : Type} [CommRing R]
+    {S : Type} [CommRing S] [Algebra R S]
+    {M : Type} [AddCommGroup M] [Module R M]
+    {P : Type} [AddCommGroup P] [Module R P] [Module S P] [IsScalarTower R S P]
+    {j : M →ₗ[R] P} (ibc : IsBaseChange S j)
+    [Module.Free R M] [Module.Finite R M]
+    (τ : Module.End R M) (p : R[X]) (m : M) :
+    (aeval (R := S) (ibc.endHom τ) (p.map (algebraMap R S))) (j m)
+      = j ((aeval (R := R) τ p) m) := by
+  classical
+  induction' p using Polynomial.induction_on' with p q hp hq n c
+  ·
+    calc
+      (aeval (R := S) (ibc.endHom τ) ((p + q).map (algebraMap R S))) (j m)
+          = (aeval (R := S) (ibc.endHom τ)
+              ((p.map (algebraMap R S)) + (q.map (algebraMap R S)))) (j m) := by
+              simp [Polynomial.map_add]
+      _ = (aeval (R := S) (ibc.endHom τ) (p.map (algebraMap R S))) (j m)
+            + (aeval (R := S) (ibc.endHom τ) (q.map (algebraMap R S))) (j m) := by
+              simp [aeval_add, LinearMap.add_apply]
+      _ = j ((aeval (R := R) τ p) m) + j ((aeval (R := R) τ q) m) := by
+              rw [hp, hq]
+      _ = j ((aeval (R := R) τ (p + q)) m) := by
+              simp [aeval_add, LinearMap.add_apply]
+  induction' n with n hn
+  · simp [monomial_zero_left, aeval_C, Module.algebraMap_end_apply]
+  calc
+    (aeval (R := S) (ibc.endHom τ) ((monomial (Nat.succ n) c).map (algebraMap R S))) (j m)
+        = (algebraMap R S c) • (((ibc.endHom τ) ^ (n + 1)) (j m)) := by
+            simp [aeval_monomial]
+    _ = (algebraMap R S c) • j ((τ ^ (n + 1)) m) := by
+            simp [endHom_pow_apply (ibc := ibc)]
+    _ = j ((aeval (R := R) τ (monomial (Nat.succ n) c)) m) := by
+            simp [aeval_monomial]
+
 
 /-
 

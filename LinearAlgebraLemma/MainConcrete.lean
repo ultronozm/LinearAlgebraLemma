@@ -17,6 +17,7 @@ import Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
 import Mathlib.LinearAlgebra.Matrix.Charpoly.LinearMap
 import Mathlib.LinearAlgebra.Pi
 import Mathlib.LinearAlgebra.Prod
+import LinearAlgebraLemma.BlockMatrix
 import LinearAlgebraLemma.MainAbstract
 import LinearAlgebraLemma.Defs
 

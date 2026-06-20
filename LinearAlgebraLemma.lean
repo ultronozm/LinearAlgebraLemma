@@ -1,4 +1,5 @@
 import LinearAlgebraLemma.Defs
+import LinearAlgebraLemma.BlockMatrix
 import LinearAlgebraLemma.InjectiveOfCyclic
 import LinearAlgebraLemma.CyclicOfCoprime
 import LinearAlgebraLemma.MainAbstract
