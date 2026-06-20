@@ -1,77 +1,9 @@
-import Mathlib.LinearAlgebra.Prod
-import Mathlib.Algebra.Polynomial.AlgebraMap
+import LinearAlgebraLemma.ForMathlib
 
 /-!
+# Project definitions
 
-# Main definitions:
-
-* `upperLeftProj`: the upper-left part of an endomorphism of a product.
-
-* `upperLeftIncl`: the endomorphism of a product extending an
-  endomorphism of the first factor.
-
-* `EvalMap`: given an endomorphism τ and a vector v, `EvalMap τ v`
-  sends a polynomial p to p(τ)v.
-
-* `Cyclic`: we call (τ, v) cyclic if every vector arises as p(τ)v.
-
+The general definitions formerly in this file now live in
+`LinearAlgebraLemma.ForMathlib`, which stages declarations that may be proposed
+for mathlib.
 -/
-
-def upperLeftProj
-    (R : Type) [CommSemiring R]
-    (V₁ : Type) [AddCommGroup V₁] [Module R V₁]
-    (V₂ : Type) [AddCommGroup V₂] [Module R V₂]
-    : Module.End R (V₁ × V₂) →ₗ[R] Module.End R V₁ where
-  toFun x := (LinearMap.fst R V₁ V₂) ∘ₗ x ∘ₗ (LinearMap.inl R V₁ V₂)
-  map_add' x y := by simp only [LinearMap.add_comp, LinearMap.comp_add]
-  map_smul' r x := by simp only [LinearMap.smul_comp, LinearMap.comp_smul, RingHom.id_apply]
-
-@[simp]
-theorem upperLeftProj_apply
-    (R : Type) [CommSemiring R]
-    (V₁ : Type) [AddCommGroup V₁] [Module R V₁]
-    (V₂ : Type) [AddCommGroup V₂] [Module R V₂]
-    (x : Module.End R (V₁ × V₂))
-    : upperLeftProj R V₁ V₂ x = (LinearMap.fst R V₁ V₂) ∘ₗ x ∘ₗ (LinearMap.inl R V₁ V₂) := rfl
-
-def upperLeftIncl
-    (R : Type) [CommSemiring R]
-    (V₁ : Type) [AddCommGroup V₁] [Module R V₁]
-    (V₂ : Type) [AddCommGroup V₂] [Module R V₂]
-    : Module.End R V₁ →ₗ[R] Module.End R (V₁ × V₂) where
-  toFun x := (LinearMap.inl R V₁ V₂) ∘ₗ x ∘ₗ (LinearMap.fst R V₁ V₂)
-  map_add' x y := by simp only [LinearMap.add_comp, LinearMap.comp_add]
-  map_smul' r x := by simp only [LinearMap.smul_comp, LinearMap.comp_smul, RingHom.id_apply]
-
-@[simp]
-theorem upperLeftIncl_apply
-    (R : Type) [CommSemiring R]
-    (V₁ : Type) [AddCommGroup V₁] [Module R V₁]
-    (V₂ : Type) [AddCommGroup V₂] [Module R V₂]
-    (x : Module.End R V₁)
-    : upperLeftIncl R V₁ V₂ x = (LinearMap.inl R V₁ V₂) ∘ₗ x ∘ₗ (LinearMap.fst R V₁ V₂) := rfl
-
-open Polynomial in
-noncomputable def EvalMap
-    {R : Type} [CommSemiring R]
-    {V : Type} [AddCommGroup V] [Module R V]
-    (τ : Module.End R V) (v : V)
-    : R[X] →ₗ[R] V :=
-  ((aeval (R := R) τ) : R[X] →ₗ[R] Module.End R V).smulRight v
-
-open Polynomial in
-@[simp]
-theorem EvalMap_apply
-    {R : Type} [CommRing R]
-    {V : Type} [AddCommGroup V] [Module R V]
-    {τ : Module.End R V}
-    {v : V}
-    {p : R[X]}
-    : (EvalMap τ v) p = (aeval (R := R) τ p) v := by rfl
-
-def Cyclic
-    (R : Type) [CommSemiring R]
-    {V : Type} [AddCommGroup V] [Module R V]
-    (τ : Module.End R V)
-    (v : V) 
-    : Prop := Function.Surjective (EvalMap τ v)
