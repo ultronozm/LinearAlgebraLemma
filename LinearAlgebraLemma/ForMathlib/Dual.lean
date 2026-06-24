@@ -9,8 +9,9 @@ import Mathlib.LinearAlgebra.Dual.Lemmas
 Facts about `LinearMap.dualMap` that are independent of the project.
 -/
 
-open LinearMap in
-theorem lie_dual
+namespace LinearMap
+
+theorem dualMap_lie
     (R : Type) [CommRing R]
     (V : Type) [AddCommGroup V] [Module R V]
     (a b : Module.End R V)
@@ -22,13 +23,12 @@ theorem lie_dual
     simp only [map_sub]
   _ = (b.dualMap * a.dualMap) - (a.dualMap * b.dualMap) := by rfl
 
-open LinearMap Module in
-theorem transpose_injective
+theorem dualMap_injective_on_end
     {R : Type} [CommRing R]
-    {V : Type} [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
-    {a b : End R V}
-    (h : a.dualMap = b.dualMap)
-    : a = b := by
+    {V : Type} [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V] :
+    Function.Injective (fun τ : Module.End R V ↦ τ.dualMap) := by
+  intro a b h
+  change a.dualMap = b.dualMap at h
   have h' : a.dualMap.dualMap = b.dualMap.dualMap := by
     rw [h]
   exact (Module.dualMap_dualMap_eq_iff (R := R) (M := V)).mp h'
@@ -56,11 +56,10 @@ lemma dualMap_pow_apply
             simp [pow_succ, Module.End.mul_apply]
       simpa [pow_succ, Module.End.mul_apply, h'] using h
 
-open LinearMap Module in
-theorem charpoly_dualmap_eq_charpoly
+theorem charpoly_dualMap
     {R : Type} [CommRing R] [Nontrivial R]
     {V : Type} [AddCommGroup V] [Module R V] [Module.Free R V] [Module.Finite R V]
-    (τ : End R V)
+    (τ : Module.End R V)
     : τ.dualMap.charpoly = τ.charpoly := by
   let b := Module.Free.chooseBasis R V
   rw [← charpoly_toMatrix τ b]
@@ -72,3 +71,4 @@ theorem charpoly_dualmap_eq_charpoly
   rw [hmat]
   exact Matrix.charpoly_transpose (LinearMap.toMatrix b b τ)
 
+end LinearMap

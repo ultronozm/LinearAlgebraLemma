@@ -141,7 +141,7 @@ theorem aux_lie_zero
     rw [h]
     unfold dualMap
     exact map_zero Module.Dual.transpose
-  rw [lie_dual] at this
+  rw [LinearMap.dualMap_lie] at this
   rw [(lie_skew _ _).symm, this]
   simp
 
@@ -163,5 +163,4 @@ theorem injective_of_cyclic'
   replace hy := aux_lie_zero R V y τ hy
   have := injective_of_cyclic τ.dualMap e' hcyc x.dualMap hx y.dualMap hy h
   unfold dualMap at this
-  exact transpose_injective this
-
+  exact LinearMap.dualMap_injective_on_end this

@@ -94,7 +94,7 @@ theorem aux_upper_left_incl_equivariance {R : Type} [CommRing R] {n : ℕ}
   · replace this := congrArg (fun f ↦ (conj decomp $ toLin' f)) this
     simp only [upperLeftIncl_apply, toLin'_toMatrix'] at this
     rw [← this]
-    simp only [conj_cancel']
+    simp only [LinearEquiv.conj_conj_symm]
   rw [upperLeftIncl_apply]
   let b₁ : Basis (Fin n) R (Fin n → R) := Pi.basisFun R (Fin n)
   let b₂ : Basis (Fin 1) R R := Basis.singleton (Fin 1) R
@@ -102,7 +102,7 @@ theorem aux_upper_left_incl_equivariance {R : Type} [CommRing R] {n : ℕ}
   let hbef : (Pi.basisFun R (Fin (n+1))).map decomp = (b₁.prod b₂).reindex e.symm := aux_reindex_bases R n
   have : toLin' y = toLin b₁ b₁ y := rfl
   rw [this]
-  rw [matrix_incl_entries' R (Fin n → R) R b₁ b₂ e decomp hbef y]
+  rw [matrix_incl_entries_reindexed R (Fin n → R) R b₁ b₂ e decomp hbef y]
   rw [matrixIncl_eq_matrixIncl']
   ext i j
   simp only [matrixIncl'_apply]
@@ -139,7 +139,7 @@ theorem aux_upper_left_proj_equivariance {R : Type} [CommRing R] {n : ℕ}
   let e : Fin (n+1) ≃ (Fin n) ⊕ (Fin 1) := finSumFinEquiv.symm
   let hbef : (Pi.basisFun R (Fin (n+1))).map decomp = (b₁.prod b₂).reindex e.symm :=
     aux_reindex_bases R n
-  rw [matrix_proj_entries' R (Fin n → R) R b₁ b₂ e decomp hbef _]
+  rw [matrix_proj_entries_reindexed R (Fin n → R) R b₁ b₂ e decomp hbef _]
   ext i j
   simp [e, Equiv.symm_symm, submatrix_apply, Function.comp_apply, finSumFinEquiv_apply_left, id_eq]
 
@@ -173,7 +173,7 @@ example
     {R : Type} [CommRing R] {n : ℕ}
     (x y : Mat R (n+1)) 
     : ⁅ι x, ι y⁆ = ι ⁅x, y⁆ := by
-  apply lie_map_of_ring_hom' (B := Module.End R ((Fin n → R) × R)) R (ι_AlgEquiv R n) x y
+  exact (RingHom.map_lie (ι_AlgEquiv R n).toRingEquiv.toRingHom x y).symm
 
 /-
 
@@ -208,14 +208,14 @@ theorem aux_commutator_equivariance {R : Type} [CommRing R] {n : ℕ}
   _ = ⁅x', ⁅ι (matrixIncl (1 : Mat R n)), ι τ⁆⁆ := rfl
   _ = ⁅x', ι ⁅(matrixIncl (1 : Mat R n)), τ⁆⁆ := by
     have : ⁅ι (matrixIncl (1 : Mat R n)), ι τ⁆ = (ι ⁅(matrixIncl (1 : Mat R n)), τ⁆)
-      := by apply lie_map_of_ring_hom' (B := Module.End R (V × R)) R (ι_AlgEquiv R n) _ τ
+      := (RingHom.map_lie (ι_AlgEquiv R n).toRingEquiv.toRingHom _ τ).symm
     rw [this]
   _ = ⁅ι x, ι ⁅(matrixIncl (1 : Mat R n)), τ⁆⁆ := rfl
   _ = ι ⁅x, ⁅(matrixIncl (1 : Mat R n)), τ⁆⁆
-    := by apply lie_map_of_ring_hom' (B := Module.End R (V × R)) R (ι_AlgEquiv R n) x _
+    := (RingHom.map_lie (ι_AlgEquiv R n).toRingEquiv.toRingHom x _).symm
   _ = ι ⁅matrixIncl y, τ⁆ := by rw [heq]
   _ = ⁅ι (matrixIncl y), ι τ⁆
-    := by apply (lie_map_of_ring_hom' (B := Module.End R (V × R)) R (ι_AlgEquiv R n) _ τ).symm
+    := RingHom.map_lie (ι_AlgEquiv R n).toRingEquiv.toRingHom _ τ
   _ = ⁅ι (matrixIncl y), τ'⁆ := rfl
 
 open LinearEquiv LinearMap Matrix in
@@ -241,7 +241,7 @@ theorem coprime_charpoly_transfer
       simpa [Matrix.subUpLeft] using h
     calc
       _ = (toLin' (submatrix τ (Fin.castAdd 1) (Fin.castAdd 1))).charpoly :=
-          charpoly_eq_toLin_charpoly (submatrix τ (Fin.castAdd 1) (Fin.castAdd 1))
+          (Matrix.charpoly_toLin' (submatrix τ (Fin.castAdd 1) (Fin.castAdd 1))).symm
       _ = (upperLeftProj R (Fin n → R) R τ').charpoly := by
           simpa using congrArg LinearMap.charpoly h'
   rcases hτ with ⟨a, b, hab⟩
@@ -316,7 +316,7 @@ theorem MainConcrete
     exact hτ0
   let x' : Module.End R (V × R) := (ι (R := R) (n := n) x)
   have hx' : ⁅x', τ'⁆ = 0 := by
-    apply lie_map_of_ring_hom (B := Module.End R ((Fin n → R) × R)) R (ι_AlgEquiv R n) x τ hx
+    exact RingHom.map_lie_eq_zero (ι_AlgEquiv R n).toRingEquiv.toRingHom x τ hx
   let y' : Module.End R V := (toLin' y)
   have heq' := aux_commutator_equivariance τ x y heq
   have hmain : ∃ r : R, x' = r • (1 : End R (V × R)) :=

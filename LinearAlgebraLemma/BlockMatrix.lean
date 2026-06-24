@@ -12,7 +12,7 @@ block decomposition workflow.
 open Module
 
 open LinearMap Sum LinearEquiv in
-theorem matrix_conj'
+theorem matrix_conj_symm_basis
     (R : Type) [CommRing R]
     {V : Type} [AddCommGroup V] [Module R V]
     {W : Type} [AddCommGroup W] [Module R W]
@@ -22,12 +22,12 @@ theorem matrix_conj'
     (x : Module.End R V)
     :
     (toMatrix b b (conj f x)) = (toMatrix (b.map f.symm) (b.map f.symm) x) := by
-  convert matrix_conj R I f (b.map f.symm) x
-  nth_rw 1 [← basis_map_cancel' R b f]
-  nth_rw 1 [← basis_map_cancel' R b f]
+  convert LinearMap.toMatrix_conj R I f (b.map f.symm) x
+  · exact (Module.Basis.map_symm_self b f).symm
+  · exact (Module.Basis.map_symm_self b f).symm
 
 open Module Matrix LinearEquiv LinearMap in
-theorem matrix_conj''
+theorem matrix_conj_reindex_entries
     (R : Type) [CommRing R]
     (U : Type) [AddCommGroup U] [Module R U]
     (V : Type) [AddCommGroup V] [Module R V]
@@ -43,10 +43,10 @@ theorem matrix_conj''
     :
     (toMatrix bU bU (conj f.symm (toLin bV bV x))) i j
     = x (e i) (e j) := by
-  rw [matrix_conj']
+  rw [matrix_conj_symm_basis]
   simp only [symm_symm]
   rw [hbef]
-  rw [matrix_basis_reindex R bV e.symm (toLin bV bV x) i j]
+  rw [LinearMap.toMatrix_reindex R bV e.symm (toLin bV bV x) i j]
   simp only [Equiv.symm_symm, toMatrix_toLin]
 
 open LinearMap Sum Basis in
@@ -72,7 +72,7 @@ theorem matrix_incl_entries
       Function.comp_apply, coe_comp, equivFun_apply, prod_repr_inl, prod_repr_inr]
 
 open Module Matrix LinearEquiv LinearMap in
-theorem matrix_incl_entries'
+theorem matrix_incl_entries_reindexed
     (R : Type) [CommRing R]
     (V₁ V₂ : Type) [AddCommGroup V₁] [Module R V₁] [AddCommGroup V₂] [Module R V₂]
     {I₁ : Type} [Fintype I₁] [DecidableEq I₁]
@@ -95,7 +95,7 @@ theorem matrix_incl_entries'
   rw [this]
   ext i j
   rw [← toMatrix_eq_toMatrix']
-  rw [matrix_conj'' R (I → R) (V₁ × V₂) (Pi.basisFun R I) b e f hbef y i j]
+  rw [matrix_conj_reindex_entries R (I → R) (V₁ × V₂) (Pi.basisFun R I) b e f hbef y i j]
   simp [y]
   rw [matrix_incl_entries R V₁ V₂ b₁ b₂ ((toLin b₁ b₁) x) (e i) (e j)]
   simp only [toMatrix_toLin]
@@ -120,7 +120,7 @@ theorem matrix_proj_entries
     Basis.prod_apply, coe_inr, elim_inl, Basis.prod_repr_inl]
 
 open Module Matrix LinearEquiv LinearMap in
-theorem matrix_proj_entries'
+theorem matrix_proj_entries_reindexed
     (R : Type) [CommRing R]
     (V₁ V₂ : Type) [AddCommGroup V₁] [Module R V₁] [AddCommGroup V₂] [Module R V₂]
     {I₁ : Type} [Fintype I₁] [DecidableEq I₁]
@@ -155,6 +155,6 @@ theorem matrix_proj_entries'
       simp only [Basis.map_apply, Basis.coe_reindex,
         Equiv.symm_symm, Function.comp_apply, Equiv.apply_symm_apply]
     rw [this]
-    rw [basis_map_commutes_reindex]
-  rw [matrix_conj'' R (V₁ × V₂) (I → R) b (Pi.basisFun R I) e.symm f.symm hbef' _ _ _]
+    rw [Module.Basis.reindex_map]
+  rw [matrix_conj_reindex_entries R (V₁ × V₂) (I → R) b (Pi.basisFun R I) e.symm f.symm hbef' _ _ _]
   simp only [submatrix_apply, Function.comp_apply]

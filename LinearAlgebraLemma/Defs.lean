@@ -27,6 +27,14 @@ theorem charpoly_eq_conj_decomp_symm_charpoly {R : Type} [CommRing R] [Nontrivia
     : y.charpoly = (conj decomp.symm y).charpoly := by
   rw [LinearEquiv.charpoly_conj]
 
+private theorem toMatrix'_charpoly_eq_charpoly
+    {R : Type} [CommRing R] [Nontrivial R] {n : ℕ}
+    (y : Module.End R (Fin n → R)) : (LinearMap.toMatrix' y).charpoly = y.charpoly := by
+  calc
+    _ = Matrix.charpoly
+        ((LinearMap.toMatrix (Pi.basisFun R (Fin n)) (Pi.basisFun R (Fin n))) y) := by rfl
+    _ = y.charpoly := y.charpoly_toMatrix (Pi.basisFun R (Fin n))
+
 open LinearMap LinearEquiv in
 theorem charpoly_eq_toMatrix_conj_decomp_symm_charpoly
     {R : Type} [CommRing R] [Nontrivial R] {n : ℕ}
@@ -38,7 +46,7 @@ theorem charpoly_eq_toMatrix_conj_decomp_symm_charpoly
   rw [this]
   have : (toMatrix' $ conj decomp.symm y) = toMatrix' u := by rfl
   rw [this]
-  exact (toMatrix_charpoly_eq_charpoly u).symm
+  exact (toMatrix'_charpoly_eq_charpoly u).symm
 
 open LinearEquiv LinearMap Matrix in
 theorem charpoly_eq_conj_decomp_toLin_charpoly {R : Type} [CommRing R] [Nontrivial R] {n : ℕ}

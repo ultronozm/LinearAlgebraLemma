@@ -458,7 +458,7 @@ lemma eval_dual_apply
         = (c • (((τ.dualMap) ^ (n + 1)) y)) v := by
             simp [EvalMap_apply, aeval_monomial, LinearMap.smul_apply]
     _ = c • y ((τ ^ (n + 1)) v) := by
-            simp [dualMap_pow_apply]
+            simp [LinearMap.dualMap_pow_apply]
     _ = y ((aeval (R := R) τ (monomial (Nat.succ n) c)) v) := by
             simp [aeval_monomial]
 
@@ -1323,11 +1323,11 @@ theorem upper_left_coprimality_dual
   intro V' τ'
   have h₁ : τ.charpoly = τ'.charpoly := by
     calc
-    _ = τ.dualMap.charpoly := (charpoly_dualmap_eq_charpoly τ).symm
+    _ = τ.dualMap.charpoly := (LinearMap.charpoly_dualMap τ).symm
     _ = τ'.charpoly := (LinearEquiv.charpoly_conj (κ' R V) τ.dualMap).symm
   have h₂ : (upperLeftProj R V R τ).charpoly = (upperLeftProj R V' R τ').charpoly := by
     rw [upper_left_conj_κ']
-    rw [← charpoly_dualmap_eq_charpoly]
+    rw [← LinearMap.charpoly_dualMap]
   rw [h₁, h₂] at hτ
   exact hτ
 

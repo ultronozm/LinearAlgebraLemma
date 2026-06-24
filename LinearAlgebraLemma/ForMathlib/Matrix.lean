@@ -9,13 +9,15 @@ import Mathlib.LinearAlgebra.Pi
 # Small matrix/linear-map API candidates
 
 These lemmas say how `LinearMap.toMatrix` behaves under basis transport and
-reindexing, and bridge `toMatrix'`/`toLin'` with characteristic polynomials.
+reindexing.
 -/
 
 open Module
 
-open LinearMap Sum LinearEquiv in
-theorem toMatrix_basis_map
+namespace LinearMap
+
+open LinearEquiv in
+theorem toMatrix_map_equiv
     {R : Type} [CommRing R]
     {V : Type} [AddCommGroup V] [Module R V]
     {W : Type} [AddCommGroup W] [Module R W]
@@ -30,15 +32,13 @@ theorem toMatrix_basis_map
     (x : V →ₗ[R] W)
   :
     (toMatrix (bV.map fV) (bW.map fW) (fW ∘ₗ x ∘ₗ fV.symm)) = (toMatrix bV bW x) := by
-  ext i j
-  simp [toMatrix, Basis.map_equivFun, LinearEquiv.trans_apply, toMatrix'_apply,
-    LinearEquiv.arrowCongr_apply, LinearEquiv.trans_symm, symm_symm, Basis.equivFun_symm_apply,
-    one_smul, coe_comp,
-    Function.comp_apply, LinearEquiv.symm_apply_apply,
-    Basis.equivFun_apply]
+  rw [toMatrix_map_left, toMatrix_map_right]
+  congr 1
+  ext v
+  simp
 
-open LinearMap Sum LinearEquiv in
-theorem matrix_conj
+open LinearEquiv in
+theorem toMatrix_conj
     (R : Type) [CommRing R]
     {V : Type} [AddCommGroup V] [Module R V]
     {W : Type} [AddCommGroup W] [Module R W]
@@ -50,10 +50,9 @@ theorem matrix_conj
     (toMatrix (b.map f) (b.map f) (conj f x)) = (toMatrix b b x) := by
   have : conj f x = f ∘ₗ x ∘ₗ f.symm := rfl
   rw [this]
-  simp only [toMatrix_basis_map]
+  simp only [toMatrix_map_equiv]
 
-open LinearMap in
-theorem matrix_basis_reindex
+theorem toMatrix_reindex
     (R : Type) [CommRing R]
     {V : Type} [AddCommGroup V] [Module R V]
     {I : Type} [Fintype I] [DecidableEq I]
@@ -69,18 +68,4 @@ theorem matrix_basis_reindex
     Basis.equivFun_symm_apply, Basis.coe_reindex, Function.comp_apply, Basis.equivFun_apply,
     Basis.repr_reindex, Finsupp.mapDomain_equiv_apply]
 
-open LinearMap in
-theorem toMatrix_charpoly_eq_charpoly {R : Type} [CommRing R] [Nontrivial R] {n : ℕ}
-    (y : Module.End R (Fin n → R)) : (toMatrix' y).charpoly = y.charpoly := by
-  calc
-  _ = Matrix.charpoly ((toMatrix (Pi.basisFun R (Fin n)) (Pi.basisFun R (Fin n))) y) := by rfl
-  _ = y.charpoly := (y.charpoly_toMatrix (Pi.basisFun R (Fin n)))
-
-open LinearMap Matrix in
-theorem charpoly_eq_toLin_charpoly {R : Type} [CommRing R] [Nontrivial R] {n : ℕ}
-    (x : Matrix (Fin n) (Fin n) R) : x.charpoly = (toLin' x).charpoly := by
-  let y := toLin' x
-  calc
-  _ = Matrix.charpoly x := by rfl
-  _ = Matrix.charpoly (toMatrix' y) := by simp [y, toMatrix'_toLin']
-  _ = y.charpoly := toMatrix_charpoly_eq_charpoly y
+end LinearMap

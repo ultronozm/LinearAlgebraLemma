@@ -28,7 +28,7 @@ theorem MainConcreteRing
     exact hτ0
   let x' : Module.End R (V × R) := (ι (R := R) (n := n) x)
   have hx' : ⁅x', τ'⁆ = 0 := by
-    apply lie_map_of_ring_hom (B := Module.End R ((Fin n → R) × R)) R (ι_AlgEquiv R n) x τ hx
+    exact RingHom.map_lie_eq_zero (ι_AlgEquiv R n).toRingEquiv.toRingHom x τ hx
   let y' : Module.End R V := (toLin' y)
   have heq' := aux_commutator_equivariance τ x y heq
   have hmain : ∃ r : R, x' = r • (1 : Module.End R (V × R)) :=

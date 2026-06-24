@@ -1,7 +1,6 @@
 import LinearAlgebraLemma.ForMathlib.Basis
 import LinearAlgebraLemma.ForMathlib.Dual
 import LinearAlgebraLemma.ForMathlib.Lie
-import LinearAlgebraLemma.ForMathlib.LinearEquiv
 import LinearAlgebraLemma.ForMathlib.Matrix
 import LinearAlgebraLemma.ForMathlib.RingTheory
 
@@ -12,7 +11,6 @@ This module is only an import barrel.  The actual candidate lemmas are grouped
 by the Mathlib area where they plausibly belong:
 
 * `ForMathlib.Basis`
-* `ForMathlib.LinearEquiv`
 * `ForMathlib.Lie`
 * `ForMathlib.Matrix`
 * `ForMathlib.Dual`
@@ -21,4 +19,3 @@ by the Mathlib area where they plausibly belong:
 Project-specific block maps, cyclic-vector definitions, and the
 coprime-characteristic-polynomial proof now live in the ordinary project files.
 -/
-
